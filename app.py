@@ -2,170 +2,125 @@ import os
 from dotenv import load_dotenv
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
-from langchain_community.vectorstores.qdrant import Qdrant
-import qdrant_client
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain.chains import create_history_aware_retriever, create_retrieval_chain
-import tiktoken
-import base64
 from openai import OpenAI
-from langchain.chains.combine_documents import create_stuff_documents_chain
+from audio_recorder_streamlit import audio_recorder
+from streamlit_float import *
+from streamlit_extras.stylable_container import stylable_container
+from utils.functions import (
+    get_vector_store,
+    get_context_retriever_chain,
+    get_conversational_rag_chain,
+    get_response,
+    process_user_input,
+    text_to_audio,
+    autoplay_audio,
+    speech_to_text,
+)
 
 # load the variables
 load_dotenv()
-
-collection_name = os.getenv("QDRANT_COLLECTION_NAME")
-
-
-# get the vector stor
-def get_vector_store():
-    client = qdrant_client.QdrantClient(
-        url=os.getenv("QDRANT_HOST"),
-        api_key=os.getenv("QDRANT_API_KEY"),
-    )
-    embeddings = OpenAIEmbeddings()
-    vector_store = Qdrant(
-        client=client,
-        collection_name=collection_name,
-        embeddings=embeddings,
-    )
-    return vector_store
-
-
-vector_store = get_vector_store()
-
-
-def get_context_retriever_chain(vector_store=vector_store):
-    llm = ChatOpenAI()
-    retriever = vector_store.as_retriever()
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("user", "{input}"),
-            (
-                "user",
-                "Given the above conversation, generate a search query to look up in order to get information relevant to the conversation",
-            ),
-        ]
-    )
-    retriever_chain = create_history_aware_retriever(llm, retriever, prompt)
-    return retriever_chain
-
-
-def get_conversational_rag_chain(retriever_chain):
-    llm = ChatOpenAI()
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                """
-                 You are a specialized doctor AI medical assistant, your primary function is to address inquiries related to medicine, ICD10 codes, diagnosis, symptoms, 
-                 and differential diagnosis.
-                 When asked about a potential differential diagnosis, provide a list of likely diagnoses with their corresponding probabilities, 
-                 narrowing down to three to four high probabilities, the sum of which must equal 100%, starting from the highest probability.
-                 For each likely diagnosis, list the symptoms that led to this conclusion. However, do not assign probabilities to the symptoms. Here's the structure to follow:
-                         Given the above mentioned symptoms the Differential Diagnosis include:
-                           1- Diagnosis 1: Probability X% this line in bold font
-                            Symptoms:
-                                Symptom 1
-                                Symptom 2
-                                Symptom 3
-                            [Continue listing symptoms as necessary]
-                           2- Diagnosis 2: Probability Y% this line in bold font
-                                Symptoms:
-                                Symptom 1
-                                Symptom 2
-                                Symptom 3
-                            [Continue listing symptoms as necessary]
-                            [Continue listing likely diagnoses with corresponding probabilities and symptoms]
-                Ensure that the sum of probabilities for the listed diagnoses equals 100%, and maintain clarity and coherence in your responses. 
-                Your responses should strictly adhere to the medical field context:\n\n{context} you have been trained in. Avoid providing general knowledge answers or responses outside of your medical training. 
-                If a question falls outside of the medical realm or exceeds your expertise, reply with: Sorry, I don't know about this as it's beyond my training context as a medical AI assistant. 
-                Refrain from answering queries on unrelated topics such as religions, sports, programming, and others listed here 
-                [ religions, general knowledge , sports ,non-medical sciences ,
-                universe,math , programming, coding, outfits , cultures, ethnicities, Management ,
-                business , politics , how to  make something like food, agriculture all general knowledge topics except medicine,..... etc ], as they lie outside your scope of expertise be polite and recognize greetings like hi , hello etc.
-                """
-          ),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("user", "{input}"),
-        ]
-    )
-    stuff_documents_chain = create_stuff_documents_chain(llm, prompt)
-    return create_retrieval_chain(retriever_chain, stuff_documents_chain)
-
-def get_response(user_input):
-    retriever_chain = get_context_retriever_chain(st.session_state.vector_store)
-    conversation_rag_chain = get_conversational_rag_chain(retriever_chain)
-    response_stream = conversation_rag_chain.stream(
-        {"chat_history": st.session_state.chat_history, "input": user_input}
-    )
-    for chunk in response_stream:
-        content=chunk.get("answer","")
-        yield content
-
-# convert text back to audio
-def text_to_audio(client, text, audio_path):
-    response = client.audio.speech.create(model="tts-1", voice="fable", input=text)
-    response.stream_to_file(audio_path)
 client = OpenAI()
-# autoplay audio function
-def autoplay_audio(audio_file):
-    with open(audio_file, "rb") as audio_file:
-        audio_bytes = audio_file.read()
-    base64_audio = base64.b64encode(audio_bytes).decode("utf-8")
-    audio_html = (
-        f'<audio src="data:audio/mp3;base64 ,{base64_audio}" controls autoplay>'
-    )
-    st.markdown(audio_html, unsafe_allow_html=True)
 
 # app layout
-st.set_page_config("Conversational AI Doctor ", "🤖")
-with open('style.css') as f:
-    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-title="Doctor AI Assistant"
-name = "Mohammed Bahageel"
-profession = "Artificial Intelligence developer"
-imgUrl="https://i.ibb.co/3k14LmY/Whats-App-Image-2024-02-10-at-9-03-47-AM.jpg"
-st.markdown(
-    f"""
-    <div class="st-emotion-cache-18ni7ap ezrtsby2">
-        <a href="{imgUrl}">
-            <img class="profileImage" src="{imgUrl}" alt="Your Photo">
-        </a>
-        <div class="textContainer">
-            <div class="title"><p>{title}</p></div>
-            <p>{name}</p>
-            <p>{profession}</p>
+def main():
+    # Read HTML file
+    st.set_page_config("Vitrual Training Assistant", "👩‍⚕️")
+    with open("style.css") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    title = "IVF Virtual Training Assistant "
+    name = "Fellowship Program"
+    profession = "Doctor Samir Abbas Hospital"
+    imgUrl = "https://static.wixstatic.com/media/bee5a4_b73ad21116a347e79fd2c7a9f5879d56~mv2.gif"
+    st.markdown(
+        f"""
+        <div class="st-emotion-cache-18ni7ap ezrtsby2">
+            <a href="{imgUrl}">
+                <img class="profileImage" src="{imgUrl}" alt="Your Photo">
+            </a>
+            <div class="textContainer">
+                <div class="title"><p>{title}</p></div>
+                <p>{name}</p>
+                <p>{profession}</p>
+            </div>
         </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        """,
+        unsafe_allow_html=True,
+    )
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [AIMessage(content=" Hello ! with you is Doctor Assistant AI  chatbot  how can I assist you today  with your medical questions ? 🥰")]
-if "vector_store" not in st.session_state:
-    st.session_state.vector_store = get_vector_store()
-for message in st.session_state.chat_history:
+    # Float feature initialization
+    float_init()
+
+    # Create footer container for the microphone
+    footer_container = stylable_container(
+        key="Mic_container",
+        css_styles=[
+            """
+            position: absolute;
+            bottom: 10px;
+            right: 25px;
+            background-color: #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: inline-block;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            """
+        ],
+    )
+    user_query=None
+    # Create a chat input field
+    user_input = st.chat_input("Type your message here...")
+    
+    with footer_container:
+        transcript = None
+        audio_bytes = audio_recorder(text=None, icon_size="5X")
+        if audio_bytes:
+            # Write the audio bytes to a file
+            with st.spinner("Transcribing..."):
+                webm_file_path = "temp_audio.mp3"
+                with open(webm_file_path, "wb") as f:
+                    f.write(audio_bytes)
+                transcript = speech_to_text(webm_file_path)
+                os.remove(webm_file_path)
+                user_query=transcript
+                
+    if user_input is not None and user_input != "":
+        user_query=user_input
+
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = [
+            AIMessage(
+                content=" Hello ! I'm the Virtual AI training Assistant at Doctor Samir Abbas Hospital , How can I assist you with your IVF related questions? 🥰"
+            )
+        ]
+    if "vector_store" not in st.session_state:
+        st.session_state.vector_store = get_vector_store()
+    for message in st.session_state.chat_history:
         if isinstance(message, AIMessage):
             with st.chat_message("AI", avatar="🤖"):
                 st.write(message.content)
         elif isinstance(message, HumanMessage):
-            with st.chat_message("Human", avatar="👨‍⚕️"):
+            with st.chat_message("Human", avatar="👩‍⚕️"):
                 st.write(message.content)
-# user input
-user_query = st.chat_input("Type your message here...")
-#response=get_response(user_query)
-if user_query is not None and user_query != "":
-    st.session_state.chat_history.append(HumanMessage(content=user_query))
-    with st.chat_message("Human", avatar="👨‍⚕️"):
-        st.markdown(user_query)
-    with st.chat_message("AI", avatar="🤖"):
-        response=st.write_stream(get_response(user_query))
-        response_audio_file = "audio_response.mp3"
-        text_to_audio(client, response, response_audio_file)
-        autoplay_audio(response_audio_file)
-        st.session_state.chat_history.append(AIMessage(content=response))
 
+    if user_query is not None and user_query != "":
+        st.session_state.chat_history.append(HumanMessage(content=user_query))
+        with st.chat_message("Human", avatar="👩‍⚕️"):
+            st.markdown(user_query)
+        with st.chat_message("AI", avatar="🤖"):
+            response = st.write_stream(get_response(user_query))
+            response_audio_file = "audio_response.mp3"
+            text_to_audio(client, response, response_audio_file)
+            autoplay_audio(response_audio_file)
+            st.session_state.chat_history.append(AIMessage(content=response))
+
+
+    footer_container.float(
+        "bottom: 1.5rem; height:30px; width:30px; display:inline-block; align-items:center;justify-content:center; overflow:hidden visible;align-self:self-end;flex-direction: row-reverse;"
+    )
+
+
+if __name__ == "__main__":
+    main()
