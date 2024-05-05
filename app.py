@@ -92,7 +92,7 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = [
             AIMessage(
-                content=" Hello ! I'm the Virtual AI training Assistant at Doctor Samir Abbas Hospital , How can I assist you with your IVF related questions? 🥰"
+                content=" Hello ! I'm the Virtual AI training Assistant at Doctor Samir Abbas Hospital , How can I assist you today with your IVF related questions? 🥰"
             )
         ]
     if "vector_store" not in st.session_state:
