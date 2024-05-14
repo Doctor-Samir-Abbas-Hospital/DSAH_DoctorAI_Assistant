@@ -110,7 +110,7 @@ def main():
             response = st.write_stream(get_response(user_query))
             response_audio_file = "audio_response.mp3"
             text_to_audio(client, response, response_audio_file)
-            st.audio(response_audio_file)
+            autoplay_audio(response_audio_file)
             st.session_state.chat_history.append(AIMessage(content=response))
  
 
