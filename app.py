@@ -11,7 +11,6 @@ from utils.functions import (
     get_context_retriever_chain,
     get_conversational_rag_chain,
     get_response,
-    process_user_input,
     text_to_audio,
     autoplay_audio,
     speech_to_text,
@@ -115,7 +114,7 @@ def main():
  
 
     footer_container.float(
-        "bottom: 1.5rem; height:1.8rem; width:1.8rem;  display:inline; align-items:center;justify-content:center; overflow:hidden;align-self:self-end;flex-direction: row-reverse;"
+        "bottom: 1.5rem; height:30px; width:30px; display:inline-block; align-items:center;justify-content:center; overflow:hidden visible;align-self:self-end;flex-direction: row-reverse;"
     )
 
 

@@ -38,7 +38,7 @@ vector_store = get_vector_store()
 
 
 def get_context_retriever_chain(vector_store=vector_store):
-    llm = ChatOpenAI(model='gpt-4')
+    llm = ChatOpenAI()
     retriever = vector_store.as_retriever()
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -58,7 +58,7 @@ def get_context_retriever_chain(vector_store=vector_store):
 
 
 def get_conversational_rag_chain(retriever_chain):
-    llm = ChatOpenAI(model="gpt-4")
+    llm = ChatOpenAI()
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", engineeredprompt),
@@ -124,23 +124,5 @@ def autoplay_audio(audio_file):
         f'<audio src="data:audio/mp3;base64 ,{base64_audio}" controls autoplay>'
     )
     st.markdown(audio_html, unsafe_allow_html=True)
-def process_user_input():
-    # Display the audio recorder widget
-    audio_bytes = audio_recorder(text=None, icon_size='15px')
 
-    # Display the text input widget
-    user_query = st.chat_input("Type your message here...")
-
-    if audio_bytes:
-        # Write the audio bytes to a file
-        with st.spinner("Transcribing..."):
-            webm_file_path = "temp_audio.mp3"
-            with open(webm_file_path, "wb") as f:
-                f.write(audio_bytes)
-            transcript = speech_to_text(webm_file_path)
-            if transcript:
-                return transcript
-    elif user_query is not None and user_query.strip() != "":
-        return user_query.strip()
-    return None
 
