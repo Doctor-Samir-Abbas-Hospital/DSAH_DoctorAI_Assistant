@@ -115,7 +115,7 @@ def main():
  
 
     footer_container.float(
-        "bottom: 3.5rem; right :36rem; height:30px; width:30px;  display:inline; align-items:center;justify-content:center; overflow:hidden visible;align-self:self-end;flex-direction: row-reverse;"
+        "bottom: 1.5rem; height:1.8rem; width:1.8rem;  display:inline; align-items:center;justify-content:center; overflow:hidden;align-self:self-end;flex-direction: row-reverse;"
     )
 
 
