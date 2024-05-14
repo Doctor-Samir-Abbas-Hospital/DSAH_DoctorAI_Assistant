@@ -1,8 +1,8 @@
 /*Body*/
 [data-testid="stAppViewContainer"]{
-    background-image:url("https://i.ibb.co/y6gzC9H/IVF.jpg");
-    background-size: cover;
-    
+    /*background-image:url("https://i.ibb.co/0GTS96m/theme3.jpg");
+    background-size: cover;*/
+    background: linear-gradient(to right, rgb(182, 244, 146), rgb(65, 158, 167));
 }
 /*header*/
 div.ezrtsby2{
@@ -11,23 +11,26 @@ div.ezrtsby2{
     display: flex;
     padding-left: 0px;
     padding: 5px;
-    height: 130px;
+    height: 145px;
     margin-bottom: 40px;
-    background: linear-gradient(90deg, #039CC1ff, #0084AEff, #0077A2ff, #8FE9FBff, #00598Aff);
+    background-color: #e0455f;
+    background-image: linear-gradient(147deg, #e0455f 0%, #44000b 74%);
+    
 }
 
 .profileImage {
-    width: 120px;
-    height: 120px;
+    width: 138px; /* Adjust the width as needed */
+    height: 138px;
     margin-right: 10px;
     border-radius: 50%;
-    border:linear-gradient(270deg, hsl(207, 65%, 70%), hsl(207, 100%, 50%));
+    border:linear-gradient(to right, rgb(88, 221, 11), rgb(51, 139, 147));
     border-style: double;
+    animation: flip 2s infinite;
 }
 
 .textContainer {
     margin-left: 5px;
-    color: antiquewhite;
+    color: white;
 }
 .textContainer p {
     margin: 0;
@@ -41,7 +44,7 @@ div.st-emotion-cache-18ni7ap .ezrtsby2 {
 }
 .textContainer .title p{
      font-size: 24px;
-     color:antiquewhite;
+     color:white;
      font-weight: bold;
   }
 /*chat message AI*/
@@ -66,17 +69,17 @@ div.st-emotion-cache-4oy321.eeusbqq4 p {
 /*user message*/
 div.st-emotion-cache-1c7y2kd.eeusbqq4 {
     align-self: flex-end;
-    background: linear-gradient(90deg, #039CC1ff, #0084AEff, #0077A2ff, #8FE9FBff, #00598Aff);
+    background: #D9FDD3;
     border-radius: 10px 3px 10px 10px;
     padding: 10px;
     max-width: 60%;
     margin-bottom: 0%;
     flex-direction: row-reverse;
-    animation: fade-in-left 1s ease-in-out both
+    
 }
 
 div.st-emotion-cache-1c7y2kd.eeusbqq4 p {
-    color: antiquewhite;
+    color: black;
     font-family: "Times New Roman";
     font-size: 17px;
 }
@@ -87,7 +90,9 @@ div.st-emotion-cache-4oy321.eeusbqq4:hover {
 
 
 }
-
+.profileImage:hover{
+    transform: scale(1.1);
+}
 /*User Shadow*/
 div.st-emotion-cache-1c7y2kd.eeusbqq4:hover {
     box-shadow: blue;}
@@ -138,4 +143,9 @@ div.st-emotion-cache-1up18o9.e1d2x3se2{
    width: 250px !important;
    background-color: white !important;
     
+}
+.textContainer .title p:hover{
+    font-size: 25px;
+    color: rgb(188, 12, 241);
+
 }

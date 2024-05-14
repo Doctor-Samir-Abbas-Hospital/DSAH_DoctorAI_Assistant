@@ -24,29 +24,28 @@ client = OpenAI()
 # app layout
 def main():
     # Read HTML file
-    st.set_page_config("Vitrual Training Assistant", "👩‍⚕️")
+    st.set_page_config("Doctor AI Assistant", page_icon="assets/Dsahicon.png")
     with open("style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-    title = "IVF Virtual Training Assistant "
-    name = "Fellowship Program"
+    title = "Doctor AI Assistant "
+    name = "Medical Diagnosis and More..."
     profession = "Doctor Samir Abbas Hospital"
-    imgUrl = "https://static.wixstatic.com/media/bee5a4_b73ad21116a347e79fd2c7a9f5879d56~mv2.gif"
+    imgUrl = "https://media3.giphy.com/media/6P47BlxlgrJxQ9GR58/giphy.gif"
     st.markdown(
-        f"""
-        <div class="st-emotion-cache-18ni7ap ezrtsby2">
-            <a href="{imgUrl}">
+                f"""
+                <div class="st-emotion-cache-18ni7ap ezrtsby2">
                 <img class="profileImage" src="{imgUrl}" alt="Your Photo">
-            </a>
-            <div class="textContainer">
+                <div class="textContainer">
                 <div class="title"><p>{title}</p></div>
                 <p>{name}</p>
                 <p>{profession}</p>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
+                <p>Powered by DSAH Information Technology</p>
+                </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+                 )
+    
     # Float feature initialization
     float_init()
 
@@ -69,13 +68,12 @@ def main():
             """
         ],
     )
-    user_query=None
+    user_query = None
     # Create a chat input field
     user_input = st.chat_input("Type your message here...")
-    
     with footer_container:
         transcript = None
-        audio_bytes = audio_recorder(text=None, icon_size="5X")
+        audio_bytes = audio_recorder(text=None, icon_size="15X")
         if audio_bytes:
             # Write the audio bytes to a file
             with st.spinner("Transcribing..."):
@@ -84,15 +82,14 @@ def main():
                     f.write(audio_bytes)
                 transcript = speech_to_text(webm_file_path)
                 os.remove(webm_file_path)
-                user_query=transcript
-                
-    if user_input is not None and user_input != "":
-        user_query=user_input
+                user_query = transcript
 
+    if user_input is not None and user_input != "":
+        user_query = user_input
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = [
             AIMessage(
-                content=" Hello ! I'm the Virtual AI training Assistant at Doctor Samir Abbas Hospital , How can I assist you today with your IVF related questions? 🥰"
+                content=" Hello ! I'm  Doctor AI Assistant at Doctor Samir Abbas Hospital , How can I assist you today with your medical inquiries? 🥰"
             )
         ]
     if "vector_store" not in st.session_state:
@@ -113,12 +110,12 @@ def main():
             response = st.write_stream(get_response(user_query))
             response_audio_file = "audio_response.mp3"
             text_to_audio(client, response, response_audio_file)
-            autoplay_audio(response_audio_file)
+            st.audio(response_audio_file)
             st.session_state.chat_history.append(AIMessage(content=response))
-
+ 
 
     footer_container.float(
-        "bottom: 1.5rem; height:30px; width:30px; display:inline-block; align-items:center;justify-content:center; overflow:hidden visible;align-self:self-end;flex-direction: row-reverse;"
+        "bottom: 1.5rem; height:30px; width:30px;  display:inline-block ; align-items:left;justify-content:center; overflow:hidden visible;align-self:self-end;flex-direction: row-reverse;"
     )
 
 
