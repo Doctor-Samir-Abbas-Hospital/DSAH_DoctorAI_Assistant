@@ -73,7 +73,7 @@ def main():
     user_input = st.chat_input("Type your message here...")
     with footer_container:
         transcript = None
-        audio_bytes = audio_recorder(text=None, icon_size="15X")
+        audio_bytes = audio_recorder(text=None, icon_size="15X", key="recorder")
         if audio_bytes:
             # Write the audio bytes to a file
             with st.spinner("Transcribing..."):
@@ -115,7 +115,7 @@ def main():
  
 
     footer_container.float(
-        "bottom: 1.5rem; height:30px; width:30px;  display:inline-block ; align-items:center;justify-content:center; overflow:hidden visible;align-self:self-end;flex-direction: row-reverse;"
+        "bottom: 3.5rem; right :36rem; height:30px; width:30px;  display:inline; align-items:center;justify-content:center; overflow:hidden visible;align-self:self-end;flex-direction: row-reverse;"
     )
 
 
