@@ -38,7 +38,7 @@ vector_store = get_vector_store()
 
 
 def get_context_retriever_chain(vector_store=vector_store):
-    llm = ChatOpenAI()
+    llm = ChatOpenAI(model="gpt-4o")
     retriever = vector_store.as_retriever()
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -58,7 +58,7 @@ def get_context_retriever_chain(vector_store=vector_store):
 
 
 def get_conversational_rag_chain(retriever_chain):
-    llm = ChatOpenAI()
+    llm = ChatOpenAI(model="gpt-4o")
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", engineeredprompt),
