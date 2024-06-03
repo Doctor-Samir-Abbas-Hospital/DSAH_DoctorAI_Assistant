@@ -3,7 +3,10 @@
     /*background-image:url("https://i.ibb.co/0GTS96m/theme3.jpg");
     background-size: cover;*/
     background: linear-gradient(to right, rgb(182, 244, 146), rgb(65, 158, 167));
+
 }
+
+
 /*header*/
 
 div.ezrtsby2{
@@ -18,6 +21,7 @@ div.ezrtsby2{
     background-image: linear-gradient(147deg, #e0455f 0%, #44000b 74%);
     
 }
+
 
 .profileImage {
     width: 138px; /* Adjust the width as needed */
@@ -53,7 +57,7 @@ div.st-emotion-cache-18ni7ap .ezrtsby2 {
 div.st-emotion-cache-4oy321.eeusbqq4 {
     background-color: white;
     border-radius: 20px;
-    margin-top: 5px;
+    margin-top: 0px;
     animation: fade-in-right 2s ease-in-out both;
 
 }

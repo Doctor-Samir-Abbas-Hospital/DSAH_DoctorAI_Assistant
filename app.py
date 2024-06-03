@@ -43,8 +43,8 @@ def main():
                 </div>
                 """,
                 unsafe_allow_html=True,
-                 )
-    
+                )
+        
     # Float feature initialization
     float_init()
 
