@@ -26,24 +26,25 @@ def main():
     st.set_page_config("Doctor AI Assistant", page_icon="assets/Dsahicon.png")
     with open("style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-    title = "Doctor AI Assistant "
-    name = "Medical Diagnosis and More..."
-    profession = "Doctor Samir Abbas Hospital"
-    imgUrl = "https://media3.giphy.com/media/6P47BlxlgrJxQ9GR58/giphy.gif"
-    st.markdown(
-                f"""
-                <div class="st-emotion-cache-18ni7ap ezrtsby2">
-                <img class="profileImage" src="{imgUrl}" alt="Your Photo">
-                <div class="textContainer">
-                <div class="title"><p>{title}</p></div>
-                <p>{name}</p>
-                <p>{profession}</p>
-                <p>Powered by DSAH Information Technology</p>
-                </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-                )
+    with st.sidebar:
+        title = "Doctor AI Assistant "
+        name = "Medical Diagnosis and More..."
+        profession = "Doctor Samir Abbas Hospital"
+        imgUrl = "https://media3.giphy.com/media/6P47BlxlgrJxQ9GR58/giphy.gif"
+        st.markdown(
+                    f"""
+                    <div class="st-emotion-cache-18ni7ap ezrtsby2">
+                    <img class="profileImage" src="{imgUrl}" alt="Your Photo">
+                    <div class="textContainer">
+                    <div class="title"><p>{title}</p></div>
+                    <p>{name}</p>
+                    <p>{profession}</p>
+                    <p>Powered by DSAH Information Technology</p>
+                    </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                    )
         
     # Float feature initialization
     float_init()
