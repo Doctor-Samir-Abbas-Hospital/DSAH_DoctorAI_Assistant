@@ -81,12 +81,10 @@ def get_response(user_input):
         yield content
 
 
+# convert text back to audio
 def text_to_audio(client, text, audio_path):
-    try:
-        response = client.audio.speech.create(model="tts-1", voice="fable", input=text)
-        response.stream_to_file(audio_path)
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    response = client.audio.speech.create(model="tts-1", voice="fable", input=text)
+    response.stream_to_file(audio_path)
 
 client = OpenAI()
 # autoplay audio function
