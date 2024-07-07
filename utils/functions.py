@@ -9,7 +9,7 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 import tiktoken
 import base64
-from openai import OpenAI
+import openai
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from templates.prompt import engineeredprompt
 from audio_recorder_streamlit import audio_recorder
@@ -87,7 +87,7 @@ def text_to_audio(client, text, audio_path):
     response.stream_to_file(audio_path)
 
 
-client = OpenAI()
+client = openai
 # autoplay audio function
 def autoplay_audio(audio_file):
     with open(audio_file, "rb") as audio_file:
