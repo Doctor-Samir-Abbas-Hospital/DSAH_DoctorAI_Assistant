@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
-from openai import OpenAI
+import openai
 from audio_recorder_streamlit import audio_recorder
 from streamlit_float import *
 from streamlit_extras.stylable_container import stylable_container
@@ -18,7 +18,7 @@ from utils.functions import (
 
 # load the variables
 load_dotenv()
-client = OpenAI()
+client = openai
 
 # app layout
 def main():
