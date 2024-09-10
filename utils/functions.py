@@ -14,6 +14,8 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from templates.prompt import engineeredprompt
 from audio_recorder_streamlit import audio_recorder
 
+
+
 # load the variables
 load_dotenv()
 collection_name = os.getenv("QDRANT_COLLECTION_NAME")
