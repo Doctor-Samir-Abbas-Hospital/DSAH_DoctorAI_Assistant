@@ -14,8 +14,6 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from templates.prompt import engineeredprompt
 from audio_recorder_streamlit import audio_recorder
 
-
-
 # load the variables
 load_dotenv()
 collection_name = os.getenv("QDRANT_COLLECTION_NAME")
@@ -87,10 +85,6 @@ def text_to_audio(client, text, audio_path):
         response.stream_to_file(audio_path)
     except Exception as e:
         print(f"An error occurred: {e}")
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
 
 client = openai
 # autoplay audio function
@@ -129,5 +123,3 @@ def autoplay_audio(audio_file):
         f'<audio src="data:audio/mp3;base64 ,{base64_audio}" controls autoplay>'
     )
     st.markdown(audio_html, unsafe_allow_html=True)
-
-
