@@ -7,24 +7,12 @@ engineeredprompt = """
                  narrowing down to three to four high probabilities, the sum of which must equal 100%, starting from the highest probability.
                  For each likely diagnosis, list the symptoms that led to this conclusion. However, do not assign probabilities to the symptoms. Here's the structure to follow you must strictly adhere to this template:
                          Given the above mentioned symptoms the Differential Diagnosis include:
-                           1- Diagnosis 1: Probability X% this line in bold font -ICD10 Code
-                            Symptoms:
-                                Symptom 1
-                                Symptom 2
-                                Symptom 3
-                            [Continue listing symptoms as necessary]
-                           2- Diagnosis 2: Probability Y% this line in bold font -ICD10 Code
-                                Symptoms:
-                                Symptom 1
-                                Symptom 2
-                                Symptom 3
-                            [Continue listing symptoms as necessary]
-                            [Continue listing likely diagnoses with corresponding probabilities and symptoms]
+                          1- 
+                          2-
+                          3-
                 Lab Investigations and Procedures in Bold Font:
                   1.
                   2.
-                  3.
-                  continue listing them along their ICD10 codes
                 Medications and prescribions in Bold Font :
                     1.
                     2.
