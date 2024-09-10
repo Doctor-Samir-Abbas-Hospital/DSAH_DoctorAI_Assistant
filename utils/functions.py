@@ -87,7 +87,10 @@ def text_to_audio(client, text, audio_path):
         response.stream_to_file(audio_path)
     except Exception as e:
         print(f"An error occurred: {e}")
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
 
 client = openai
 # autoplay audio function
