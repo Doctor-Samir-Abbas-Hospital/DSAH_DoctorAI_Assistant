@@ -22,7 +22,6 @@ load_dotenv()
 client = OpenAI()
 
 def translate():
-    #st.set_page_config("Conversational AI Doctor", "🤖")
     if "translate_state" not in st.session_state:
         st.session_state.translate_state = {}
     
@@ -64,12 +63,20 @@ def translate():
         elif isinstance(message, HumanMessage):
             with st.chat_message("Human", avatar="👨‍⚕️"):
                 st.write(message.content)
+
     pdf_text = ""
     if uploaded_file:
         with st.spinner("Reading PDF..."):
             reader = PdfReader(uploaded_file)
             for page in reader.pages:
                 pdf_text += page.extract_text()
+        
+        if st.button("Translate PDF"):
+            translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
+            with st.chat_message("AI", avatar="🤖"):
+                response = get_response_(translation_prompt + " " + pdf_text)
+                st.write(response)
+                st.session_state.chat_history1.append(AIMessage(content=response))
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():
@@ -79,7 +86,8 @@ def translate():
             st.markdown(user_query)
         
         with st.chat_message("AI", avatar="🤖"):
-            response = st.write_stream(get_response_(user_query + " " + pdf_text))
+            response = get_response_(user_query)
+            st.write(response)
             st.session_state.chat_history1.append(AIMessage(content=response))
 
 if __name__ == "__main__":
