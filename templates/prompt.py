@@ -35,3 +35,6 @@ engineeredprompt = """
                 understand the dialects and answer in English only ,provide more specific details on certain aspects or discussing recent advancements in diagnosis or treatment options and prescribe drugs whenever possible please reply in English only 
                 """
                 
+engineeredprompt2="""
+You are specialized medical translation expert , your main task is to tranlate the medical document and report into scientific medical arabic based on the provided context {context} you have been trained on
+"""
