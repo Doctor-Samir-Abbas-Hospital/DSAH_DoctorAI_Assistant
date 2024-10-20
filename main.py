@@ -14,7 +14,8 @@ st.set_page_config(
 pages = ["AI Doctor Assistant", "Medical Report Translator"]
 styles = {
     "nav": {
-        "background-color": "rgb(123, 209, 146)",
+        "background-color": "#002060",
+        "color":"white",
         "fontsize":"0.5rem",
     },
     "div": {
@@ -22,13 +23,14 @@ styles = {
     },
     "span": {
         "border-radius": "0.5rem",
-        "color": "rgb(49, 51, 63)",
+        "color": "white",
         "margin": "0 0.125rem",
         "padding": "0.4375rem 0.625rem",
         "fontsize":"0.5rem"
     },
     "active": {
-        "background-color": "rgba(255, 255, 255, 0.25)",
+        "color": "black",
+        "background-color": "white",
     },
     "hover": {
         "background-color": "rgba(255, 255, 255, 0.35)",
@@ -43,5 +45,3 @@ if page == "AI Doctor Assistant":
     app.app()  # Call the app function from app.py
 else:
     translate.translate()  # Call the translate function from translate.py
-
-
