@@ -49,10 +49,10 @@ def translate():
             """,
             unsafe_allow_html=True,
         )
-    with st.sidebar:
-     uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
+    
+    uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
     if "chat_history1" not in st.session_state:
-        st.session_state.chat_history1 = [AIMessage(content=f"Please upload your PDF file 🥰")]
+        st.session_state.chat_history1 = []
     
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vector_store()
