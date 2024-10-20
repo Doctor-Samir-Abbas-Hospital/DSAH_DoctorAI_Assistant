@@ -73,7 +73,7 @@ def translate():
             for page in reader.pages:
                 pdf_text += page.extract_text()
         
-        if st.button("Translate PDF"):
+        if st.button("Translate The Medical Report"):
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
             with st.chat_message("AI", avatar="🤖"):
                 response = get_response_(translation_prompt + " " + pdf_text)
