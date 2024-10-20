@@ -11,3 +11,5 @@ openai
 streamlit_float
 audio_recorder_streamlit
 streamlit_extras
+PyPDF2
+streamlit_navigation_bar

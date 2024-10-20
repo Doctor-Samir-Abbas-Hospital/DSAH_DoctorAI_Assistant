@@ -21,9 +21,9 @@ load_dotenv()
 client = openai
 
 # app layout
-def main():
+def app():
     # Read HTML file
-    st.set_page_config("Doctor AI Assistant", page_icon="assets/Dsahicon.png")
+    #st.set_page_config("Doctor AI Assistant", page_icon="assets/Dsahicon.png")
     with open("style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     with st.sidebar:
@@ -70,7 +70,7 @@ def main():
     )
     user_query = None
     # Create a chat input field
-    user_input = st.chat_input("Type your message here...")
+    user_input = st.chat_input("Type your message here...", key="app_chat_input")  # Unique key
     with footer_container:
         transcript = None
         audio_bytes = audio_recorder(text=None, icon_size="15X", key="recorder")
@@ -120,4 +120,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    app()

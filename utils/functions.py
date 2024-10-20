@@ -11,7 +11,7 @@ import tiktoken
 import base64
 import openai
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from templates.prompt import engineeredprompt
+from templates.prompt import engineeredprompt ,engineeredprompt2
 from audio_recorder_streamlit import audio_recorder
 
 
@@ -68,11 +68,31 @@ def get_conversational_rag_chain(retriever_chain):
     )
     stuff_documents_chain = create_stuff_documents_chain(llm, prompt)
     return create_retrieval_chain(retriever_chain, stuff_documents_chain)
-
+def get_conversational_rag(retriever_chain):
+    llm = ChatOpenAI(model="gpt-4o")
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", engineeredprompt2),
+            MessagesPlaceholder(variable_name="chat_history"),
+            ("user", "{input}"),
+        ]
+    )
+    stuff_documents_chain = create_stuff_documents_chain(llm, prompt)
+    return create_retrieval_chain(retriever_chain, stuff_documents_chain)
 
 def get_response(user_input):
     retriever_chain = get_context_retriever_chain(st.session_state.vector_store)
     conversation_rag_chain = get_conversational_rag_chain(retriever_chain)
+    response_stream = conversation_rag_chain.stream(
+        {"chat_history": st.session_state.chat_history, "input": user_input}
+    )
+    for chunk in response_stream:
+        content = chunk.get("answer", "")
+        yield content
+
+def get_response_(user_input):
+    retriever_chain = get_context_retriever_chain(st.session_state.vector_store)
+    conversation_rag_chain = get_conversational_rag(retriever_chain)
     response_stream = conversation_rag_chain.stream(
         {"chat_history": st.session_state.chat_history, "input": user_input}
     )
@@ -98,12 +118,13 @@ def autoplay_audio(audio_file):
         f'<audio src="data:audio/mp3;base64 ,{base64_audio}" controls autoplay>'
     )
     st.markdown(audio_html, unsafe_allow_html=True)
-# Transcribe audio to text
+# Transcribe audio to text with spinner
 def transcribe_audio(client, audio_path):
-    with open(audio_path, "rb") as audio_file:
-        transcript = client.audio.transcriptions.create(
-            model="whisper-1", file=audio_file
-        )
+    with st.spinner("Transcribing audio..."):
+        with open(audio_path, "rb") as audio_file:
+            transcript = client.audio.transcriptions.create(
+                model="whisper-1", file=audio_file
+            )
         return transcript.text
     
 def speech_to_text(audio_data):
@@ -116,12 +137,12 @@ def speech_to_text(audio_data):
     return transcript
 
 
-# autoplay audio function
-def autoplay_audio(audio_file):
+# play audio function (no autoplay)
+def play_audio(audio_file):
     with open(audio_file, "rb") as audio_file:
         audio_bytes = audio_file.read()
     base64_audio = base64.b64encode(audio_bytes).decode("utf-8")
     audio_html = (
-        f'<audio src="data:audio/mp3;base64 ,{base64_audio}" controls autoplay>'
+        f'<audio src="data:audio/mp3;base64,{base64_audio}" controls autoplay>'
     )
     st.markdown(audio_html, unsafe_allow_html=True)
