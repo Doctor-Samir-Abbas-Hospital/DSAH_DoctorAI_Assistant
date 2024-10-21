@@ -28,7 +28,14 @@ def create_pdf(content):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, str(content))  # Ensure content is a string
+    
+    # Ensure that content is a string
+    if isinstance(content, str):
+        pdf.multi_cell(0, 10, content)
+    else:
+        # Convert generator to string
+        pdf.multi_cell(0, 10, ''.join(content))  # Adjust if needed based on how content behaves
+    
     pdf.output(pdf_buffer, 'F')
     pdf_buffer.seek(0)
     return pdf_buffer
@@ -62,10 +69,14 @@ def translate():
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
         
         if "last_translation" in st.session_state:
-            pdf_buffer = create_pdf(st.session_state.last_translation)
-            b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
-            download_button = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="translation.pdf">🡇 Download Translation as PDF</a>'
-            st.markdown(download_button, unsafe_allow_html=True)
+            st.success("Translation complete! Ready for download.")
+        
+        if st.button("Download Translation as PDF"):
+            if "last_translation" in st.session_state:
+                pdf_buffer = create_pdf(st.session_state.last_translation)
+                b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
+                href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="translation.pdf">Click here to download</a>'
+                st.markdown(href, unsafe_allow_html=True)
 
     if "chat_history1" not in st.session_state:
         st.session_state.chat_history1 = []
@@ -86,16 +97,19 @@ def translate():
         with st.spinner("Reading PDF..."):
             reader = PdfReader(uploaded_file)
             for page in reader.pages:
-                pdf_text += page.extract_text() or ""
+                pdf_text += page.extract_text()
         
         if st.button("Translate The Medical Report"):
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
             with st.chat_message("AI", avatar="🤖"):
                 response = get_response_(translation_prompt + " " + pdf_text)
-                response_str = str(response)  # Ensure response is a string
-                st.write(response_str)
-                st.session_state.chat_history1.append(AIMessage(content=response_str))
-                st.session_state.last_translation = response_str
+                if isinstance(response, str):
+                    st.session_state.last_translation = response
+                else:
+                    st.session_state.last_translation = ''.join(response)  # Ensure it's a string
+                st.write(response)
+                st.session_state.chat_history1.append(AIMessage(content=response))
+                st.success("Translation complete! Ready for download.")
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():
@@ -106,10 +120,14 @@ def translate():
         
         with st.chat_message("AI", avatar="🤖"):
             response = get_response_(user_query)
-            response_str = str(response)  # Ensure response is a string
-            st.write(response_str)
-            st.session_state.chat_history1.append(AIMessage(content=response_str))
-            st.session_state.last_translation = response_str
+            if isinstance(response, str):
+                st.session_state.last_translation = response
+            else:
+                st.session_state.last_translation = ''.join(response)  # Ensure it's a string
+            st.write(response)
+            st.session_state.chat_history1.append(AIMessage(content=response))
+            st.success("Translation complete! Ready for download.")
 
 if __name__ == "__main__":
     translate()
+
