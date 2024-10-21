@@ -8,8 +8,11 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
+import base64
 from openai import OpenAI
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from fpdf import FPDF
+from io import BytesIO
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -19,6 +22,16 @@ from utils.functions import (
 load_dotenv()
 
 client = OpenAI()
+
+def create_pdf(content):
+    pdf_buffer = BytesIO()
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, content)
+    pdf.output(pdf_buffer, 'F')
+    pdf_buffer.seek(0)
+    return pdf_buffer
 
 def translate():
     if "translate_state" not in st.session_state:
@@ -47,10 +60,15 @@ def translate():
         )
     
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
+        
+        if "last_translation" in st.session_state:
+            pdf_buffer = create_pdf(st.session_state.last_translation)
+            b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
+            download_button = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="translation.pdf">🡇 Download Translation as PDF</a>'
+            st.markdown(download_button, unsafe_allow_html=True)
+
     if "chat_history1" not in st.session_state:
-        st.session_state.chat_history1 = [
-     
-        ]
+        st.session_state.chat_history1 = []
     
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vector_store()
@@ -76,6 +94,7 @@ def translate():
                 response = get_response_(translation_prompt + " " + pdf_text)
                 st.write(response)
                 st.session_state.chat_history1.append(AIMessage(content=response))
+                st.session_state.last_translation = response
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():
@@ -88,6 +107,7 @@ def translate():
             response = get_response_(user_query)
             st.write(response)
             st.session_state.chat_history1.append(AIMessage(content=response))
+            st.session_state.last_translation = response
 
 if __name__ == "__main__":
     translate()
