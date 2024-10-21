@@ -8,6 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
+import base64
 from openai import OpenAI
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from utils.functions import (
@@ -23,6 +24,7 @@ client = OpenAI()
 def translate():
     if "translate_state" not in st.session_state:
         st.session_state.translate_state = {}
+    
     with open('style.css') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
@@ -48,9 +50,7 @@ def translate():
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
     if "chat_history1" not in st.session_state:
         st.session_state.chat_history1 = [
-          AIMessage(
-                content="Hello! I am  medical translation assistant. Please upload your PDF file and press the Translate report button."
-            )
+     
         ]
     
     if "vector_store" not in st.session_state:
@@ -73,11 +73,10 @@ def translate():
         
         if st.button("Translate The Medical Report"):
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
-            # Append translation to chat history
-            response = get_response_(translation_prompt + " " + pdf_text)
-            st.session_state.chat_history1.append(AIMessage(content=response))
             with st.chat_message("AI", avatar="🤖"):
+                response = get_response_(translation_prompt + " " + pdf_text)
                 st.write(response)
+                st.session_state.chat_history1.append(AIMessage(content=response))
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():
