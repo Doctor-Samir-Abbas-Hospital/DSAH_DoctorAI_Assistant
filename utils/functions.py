@@ -93,17 +93,18 @@ def get_response(user_input):
 def get_response_(user_input):
     retriever_chain = get_context_retriever_chain(st.session_state.vector_store)
     conversation_rag_chain = get_conversational_rag(retriever_chain)
-    response_stream = conversation_rag_chain.stream(
-        {"chat_history": st.session_state.chat_history, "input": user_input}
-    )
     
-    response_content = []  # Collect chunks here
-    for chunk in response_stream:
-        content = chunk.get("answer", "")
-        if content:  # Ensure non-empty content is added
-            response_content.append(content)
+    # Invoke the conversation chain with the chat history and user input
+    response = conversation_rag_chain.invoke({
+        "chat_history": st.session_state.chat_history,
+        "input": user_input
+    })
+    
+    # Assuming the response contains a key 'output' with the generated response
+    generated_response = response.get('answer', '')
+    return generated_response
+    
 
-    return " ".join(response_content)  # Join chunks into a single string
 
 def text_to_audio(client, text, audio_path):
     try:
