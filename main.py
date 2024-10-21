@@ -22,6 +22,8 @@ styles = {
         "background-color": "#990033",
         "color":"white",
         "fontsize":"0.5rem",
+        "gap":"1",
+
     },
     "div": {
         "max-width": "32rem",
@@ -29,7 +31,6 @@ styles = {
     "span": {
         "border-radius": "0.5rem",
         "color": "white",
-        "margin": "0 0.125rem",
         "padding": "0.4375rem 0.625rem",
         "fontsize":"0.5rem"
     },

@@ -11,11 +11,9 @@ from PyPDF2 import PdfReader
 import base64
 from openai import OpenAI
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from fpdf import FPDF
-from io import BytesIO
 from utils.functions import (
     get_vector_store,
-    get_response_
+    get_response_,
 )
 
 # Load environment variables
@@ -23,37 +21,10 @@ load_dotenv()
 
 client = OpenAI()
 
-def create_pdf(content):
-    pdf_buffer = BytesIO()
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-
-    # Ensure content is a string
-    if isinstance(content, str):
-        pdf.multi_cell(0, 10, content)
-    else:
-        st.error("Response content is not a valid string.")
-        return None
-
-    pdf.output(pdf_buffer, 'F')
-    pdf_buffer.seek(0)
-    return pdf_buffer
-
-
 def translate():
     if "translate_state" not in st.session_state:
         st.session_state.translate_state = {}
     
-    if "chat_history1" not in st.session_state:
-        st.session_state.chat_history1 = []
-    
-    if "last_translation" not in st.session_state:
-        st.session_state.last_translation = ""
-
-    if "vector_store" not in st.session_state:
-        st.session_state.vector_store = get_vector_store()
-
     with open('style.css') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
@@ -75,8 +46,15 @@ def translate():
             """,
             unsafe_allow_html=True,
         )
-
+    
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
+    if "chat_history1" not in st.session_state:
+        st.session_state.chat_history1 = [
+     
+        ]
+    
+    if "vector_store" not in st.session_state:
+        st.session_state.vector_store = get_vector_store()
 
     for message in st.session_state.chat_history1:
         if isinstance(message, AIMessage):
@@ -91,27 +69,14 @@ def translate():
         with st.spinner("Reading PDF..."):
             reader = PdfReader(uploaded_file)
             for page in reader.pages:
-                pdf_text += page.extract_text() or ""
+                pdf_text += page.extract_text()
         
         if st.button("Translate The Medical Report"):
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
             with st.chat_message("AI", avatar="🤖"):
                 response = get_response_(translation_prompt + " " + pdf_text)
-
-                # Check if the response is valid
-                if response:
-                    st.session_state.chat_history1.append(AIMessage(content=response))
-                    st.session_state.last_translation = response  # Store the last translation
-                    st.write(response)
-
-                    # Create a PDF for download
-                    pdf_buffer = create_pdf(response)
-                    if pdf_buffer:
-                        b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
-                        href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="translation.pdf">Click here to download the translation</a>'
-                        st.markdown(href, unsafe_allow_html=True)
-                else:
-                    st.error("Translation failed. Please try again.")
+                st.write(response)
+                st.session_state.chat_history1.append(AIMessage(content=response))
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():
@@ -122,9 +87,8 @@ def translate():
         
         with st.chat_message("AI", avatar="🤖"):
             response = get_response_(user_query)
-            if response:
-                st.write(response)
-                st.session_state.chat_history1.append(AIMessage(content=response))
+            st.write(response)
+            st.session_state.chat_history1.append(AIMessage(content=response))
 
 if __name__ == "__main__":
     translate()
