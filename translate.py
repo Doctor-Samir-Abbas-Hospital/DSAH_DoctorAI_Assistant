@@ -8,7 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
-from fpdf import FPDF  # Make sure to install fpdf with pip
+from fpdf import FPDF  # Ensure you have fpdf installed
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -99,12 +99,14 @@ def translate():
         pdf.set_font("Arial", size=12)
         pdf.multi_cell(0, 10, translated_text)
 
-        # Save the PDF to a temporary file
-        pdf_output = "translated_report.pdf"
+        # Save the PDF to a BytesIO object
+        from io import BytesIO
+        pdf_output = BytesIO()
         pdf.output(pdf_output)
+        pdf_output.seek(0)  # Move to the beginning of the BytesIO object
 
-        with open(pdf_output, "rb") as f:
-            st.sidebar.download_button("Download Translated Report", f, file_name="translated_report.pdf", mime="application/pdf")
+        st.sidebar.download_button("Download Translated Report", pdf_output, file_name="translated_report.pdf", mime="application/pdf")
+
     else:
         st.sidebar.button("Download Translated Report", disabled=True)
 
@@ -122,4 +124,5 @@ def translate():
 
 if __name__ == "__main__":
     translate()
+
 
