@@ -25,6 +25,7 @@ div.ezrtsby2{
     z-index: 100;
     position:absolute;
     margin-bottom: 40px;
+    width: 400px;
     background-color:#990033;
     background-image: linear-gradient(to right, #990033, rgb(46, 1, 1));
 
@@ -38,12 +39,13 @@ div.ezrtsby2{
     display: none;
 }
 .profileImage {
-    width: 138px; /* Adjust the width as needed */
-    height: 138px;
+    width: 180px; /* Adjust the width as needed */
+    height: 180px;
     margin-right: 10px;
     margin-left: 12px;
     margin-top: 15px;
     border-radius: 50%;
+    object-fit: cover;
     border:linear-gradient(to right, rgb(88, 221, 11), rgb(51, 139, 147));
     border-style: double;
     animation: flip 2s infinite;
