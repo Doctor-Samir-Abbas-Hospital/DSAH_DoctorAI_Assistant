@@ -22,16 +22,11 @@ div.ezrtsby2{
     
 }*/
 .st-emotion-cache-6qob1r.eczjsme3,[data-testid="stSidebar"]{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    padding-left: 0px;
-    padding: 5px;
-    height: 145px;
+    z-index: 100;
+    position:absolute;
     margin-bottom: 40px;
-    background-color: #002060;
-    background-image: linear-gradient(to right, #002060, rgb(73, 187, 216));;
+    background-color:#990033;
+    background-image: linear-gradient(to right, #990033, rgb(46, 1, 1));
 
 }
 .st-emotion-cache-18ni7ap.ezrtsby2{
@@ -53,10 +48,7 @@ div.ezrtsby2{
     border-style: double;
     animation: flip 2s infinite;
 }
-.st-emotion-cache-1pbsqtx{
-display: flex;
-position:absolute;
-}
+
 .textContainer {
     margin-left: 5px;
     color: white;
@@ -81,7 +73,7 @@ div.st-emotion-cache-18ni7ap .ezrtsby2 {
 div.st-emotion-cache-4oy321.eeusbqq4 {
     background-color: white;
     border-radius: 20px;
-    margin-top: 0px;
+    margin-top: 5px;
     animation: fade-in-right 2s ease-in-out both;
 
 }
@@ -92,7 +84,6 @@ div.st-emotion-cache-4oy321.eeusbqq4 p {
     font-family: "Times New Roman";
     font-size: 17px;
     
-
 }
 
 /*user message*/
@@ -213,92 +204,6 @@ div.st-emotion-cache-1up18o9.e1d2x3se2{
       align-self:self-end;
     }
   }
-  :root {
-    --body-color: #010c15;
-    --box-bg: #26d0ce;
-    --box-fg: var(--body-color);
-    --box-border: #d3d3d3;
-    --box-width: 150px;
-    --border-radius: 5px;
-    color-scheme: dark;
-  }
-  
-  body {
-    height: 100vh;
-    display: grid;
-    overflow: hidden;
-    place-content: center;
-    background-color: var(--body-color);
-  }
-  
-  nav {
-    margin: 10%;
-    display: flex;
-    text-align: center;
-    font: bold 1.5rem sans-serif;
-    box-shadow: 0 5px 50px 0px rgb(255 255 255 / 0.3);
-  }
-  
-  nav a {
-    transition: 0.2s;
-    color: var(--box-fg);
-    text-decoration: none;
-    width: var(--box-width);
-    background: var(--box-bg);
-    padding: calc(var(--box-width) / 10);
-  }
-  
-  nav a.active {
-    background: var(--box-fg);
-    color: var(--box-bg);
-  }
-  
-  nav a:first-child {
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
-  }
-  
-  nav a:last-child {
-    border-top-right-radius: var(--border-radius);
-    border-bottom-right-radius: var(--border-radius);
-  }
-  
-  nav a:hover {
-    filter: blur(3px);
-    opacity: 0.5;
-    outline: 1px solid var(--box-bg);
-  }
-  
-  nav a:hover.active {
-    filter: blur(0px);
-    opacity: 1;
-    outline: 1px solid var(--box-border);
-  }
-  button {
-    background-color: #002060; /* Dark Blue background */
-    border: none; /* Remove borders */
-    color: white; /* White text */
-    padding: 15px 32px; /* Add padding */
-    text-align: center; /* Center text */
-    text-decoration: none; /* Remove underline */
-    display: inline-block; /* Button display */
-    font-size: 16px; /* Increase font size */
-    margin: 4px 2px; /* Add space around button */
-    cursor: pointer; /* Pointer cursor on hover */
-    border-radius: 12px; /* Rounded corners */
-    transition-duration: 0.4s; /* Transition effect */
-    box-shadow: 0 5px #999; /* 3D shadow effect */
-}
 
-button:hover {
-    background-color: white; /* White background on hover */
-    color: black; /* Black text on hover */
-    border: 2px solid #002060; /* Dark Blue border */
-}
 
-button:active {
-    background-color: #002060; /* Dark Blue background on click */
-    box-shadow: 0 3px #666; /* Pressed 3D shadow */
-    transform: translateY(2px); /* Pressed button effect */
-}
 
