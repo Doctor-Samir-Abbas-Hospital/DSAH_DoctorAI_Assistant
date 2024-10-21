@@ -38,6 +38,15 @@ def create_pdf(content):
 def translate():
     if "translate_state" not in st.session_state:
         st.session_state.translate_state = {}
+    
+    if "chat_history1" not in st.session_state:
+        st.session_state.chat_history1 = []
+    
+    if "last_translation" not in st.session_state:
+        st.session_state.last_translation = ""
+
+    if "vector_store" not in st.session_state:
+        st.session_state.vector_store = get_vector_store()
 
     with open('style.css') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
@@ -47,7 +56,7 @@ def translate():
         name = "Medical Diagnosis and More..."
         profession = "Doctor Samir Abbas Hospital"
         imgUrl = "https://media3.giphy.com/media/6P47BlxlgrJxQ9GR58/giphy.gif"
-
+        
         st.markdown(
             f"""
                 <img class="profileImage" src="{imgUrl}" alt="Your Photo">
@@ -63,12 +72,6 @@ def translate():
 
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
 
-    if "chat_history1" not in st.session_state:
-        st.session_state.chat_history1 = []
-
-    if "vector_store" not in st.session_state:
-        st.session_state.vector_store = get_vector_store()
-
     for message in st.session_state.chat_history1:
         if isinstance(message, AIMessage):
             with st.chat_message("AI", avatar="🤖"):
@@ -83,17 +86,17 @@ def translate():
             reader = PdfReader(uploaded_file)
             for page in reader.pages:
                 pdf_text += page.extract_text() or ""
-
+        
         if st.button("Translate The Medical Report"):
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
             with st.chat_message("AI", avatar="🤖"):
                 response = get_response_(translation_prompt + " " + pdf_text)
-                st.write(response)
-                st.session_state.chat_history1.append(AIMessage(content=response))
-
-                # Debug: Check if response is not empty
+                
+                # Check if the response is valid
                 if response:
-                    st.session_state.last_translation = response  # Store the translation for PDF download
+                    st.session_state.chat_history1.append(AIMessage(content=response))
+                    st.session_state.last_translation = response  # Store the last translation
+                    st.write(response)
 
                     # Create a PDF for download
                     pdf_buffer = create_pdf(response)
@@ -106,10 +109,10 @@ def translate():
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():
         st.session_state.chat_history1.append(HumanMessage(content=user_query))
-
+        
         with st.chat_message("Human", avatar="👨‍⚕️"):
             st.markdown(user_query)
-
+        
         with st.chat_message("AI", avatar="🤖"):
             response = get_response_(user_query)
             st.write(response)
@@ -117,4 +120,5 @@ def translate():
 
 if __name__ == "__main__":
     translate()
+
 
