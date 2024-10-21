@@ -15,7 +15,7 @@ from fpdf import FPDF
 from io import BytesIO
 from utils.functions import (
     get_vector_store,
-    get_response_,
+    get_response_
 )
 
 # Load environment variables
@@ -29,11 +29,17 @@ def create_pdf(content):
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    pdf.multi_cell(0, 10, content)
+    # Ensure content is a string
+    if isinstance(content, str):
+        pdf.multi_cell(0, 10, content)
+    else:
+        st.error("Response content is not a valid string.")
+        return None
 
     pdf.output(pdf_buffer, 'F')
     pdf_buffer.seek(0)
     return pdf_buffer
+
 
 def translate():
     if "translate_state" not in st.session_state:
@@ -91,7 +97,7 @@ def translate():
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
             with st.chat_message("AI", avatar="🤖"):
                 response = get_response_(translation_prompt + " " + pdf_text)
-                
+
                 # Check if the response is valid
                 if response:
                     st.session_state.chat_history1.append(AIMessage(content=response))
@@ -100,9 +106,10 @@ def translate():
 
                     # Create a PDF for download
                     pdf_buffer = create_pdf(response)
-                    b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
-                    href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="translation.pdf">Click here to download the translation</a>'
-                    st.markdown(href, unsafe_allow_html=True)
+                    if pdf_buffer:
+                        b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
+                        href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="translation.pdf">Click here to download the translation</a>'
+                        st.markdown(href, unsafe_allow_html=True)
                 else:
                     st.error("Translation failed. Please try again.")
 
@@ -115,10 +122,9 @@ def translate():
         
         with st.chat_message("AI", avatar="🤖"):
             response = get_response_(user_query)
-            st.write(response)
-            st.session_state.chat_history1.append(AIMessage(content=response))
+            if response:
+                st.write(response)
+                st.session_state.chat_history1.append(AIMessage(content=response))
 
 if __name__ == "__main__":
     translate()
-
-

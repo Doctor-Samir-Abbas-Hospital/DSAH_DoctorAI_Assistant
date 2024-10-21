@@ -96,10 +96,14 @@ def get_response_(user_input):
     response_stream = conversation_rag_chain.stream(
         {"chat_history": st.session_state.chat_history, "input": user_input}
     )
+    
+    response_content = []  # Collect chunks here
     for chunk in response_stream:
         content = chunk.get("answer", "")
-        yield content
+        if content:  # Ensure non-empty content is added
+            response_content.append(content)
 
+    return " ".join(response_content)  # Join chunks into a single string
 
 def text_to_audio(client, text, audio_path):
     try:
