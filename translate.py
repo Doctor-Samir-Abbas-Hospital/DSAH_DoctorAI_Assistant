@@ -8,11 +8,8 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
-import base64
 from openai import OpenAI
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from fpdf import FPDF
-from io import BytesIO
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -22,19 +19,6 @@ from utils.functions import (
 load_dotenv()
 
 client = OpenAI()
-
-def create_pdf(content):
-    if isinstance(content, str):
-        pdf_buffer = BytesIO()
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        pdf.multi_cell(0, 10, content)
-        pdf.output(pdf_buffer)
-        pdf_buffer.seek(0)
-        return pdf_buffer
-    else:
-        raise ValueError("Content must be a string")
 
 def translate():
     if "translate_state" not in st.session_state:
@@ -63,38 +47,35 @@ def translate():
         )
     
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
-        
-        if "last_translation" in st.session_state:
-            pdf_buffer = create_pdf(st.session_state.last_translation)
-            b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
-            download_button = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="translation.pdf">🡇 Download Translation as PDF</a>'
-            st.markdown(download_button, unsafe_allow_html=True)
-        else:
-            st.markdown("Upload and translate a document to enable download.")
-
     if "chat_history1" not in st.session_state:
-        st.session_state.chat_history1 = []
+        st.session_state.chat_history1 = [
+     
+        ]
     
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vector_store()
+
+    for message in st.session_state.chat_history1:
+        if isinstance(message, AIMessage):
+            with st.chat_message("AI", avatar="🤖"):
+                st.write(message.content)
+        elif isinstance(message, HumanMessage):
+            with st.chat_message("Human", avatar="👨‍⚕️"):
+                st.write(message.content)
 
     pdf_text = ""
     if uploaded_file:
         with st.spinner("Reading PDF..."):
             reader = PdfReader(uploaded_file)
             for page in reader.pages:
-                pdf_text += page.extract_text() or ""
+                pdf_text += page.extract_text()
         
         if st.button("Translate The Medical Report"):
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
             with st.chat_message("AI", avatar="🤖"):
                 response = get_response_(translation_prompt + " " + pdf_text)
-                if isinstance(response, str):
-                    st.write(response)
-                    st.session_state.chat_history1.append(AIMessage(content=response))
-                    st.session_state.last_translation = response
-                else:
-                    st.error("Translation response is not a string.")
+                st.write(response)
+                st.session_state.chat_history1.append(AIMessage(content=response))
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():
@@ -105,12 +86,8 @@ def translate():
         
         with st.chat_message("AI", avatar="🤖"):
             response = get_response_(user_query)
-            if isinstance(response, str):
-                st.write(response)
-                st.session_state.chat_history1.append(AIMessage(content=response))
-                st.session_state.last_translation = response
-            else:
-                st.error("Chat response is not a string.")
+            st.write(response)
+            st.session_state.chat_history1.append(AIMessage(content=response))
 
 if __name__ == "__main__":
     translate()
