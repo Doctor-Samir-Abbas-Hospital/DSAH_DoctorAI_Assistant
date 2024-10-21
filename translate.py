@@ -11,6 +11,9 @@ from PyPDF2 import PdfReader
 import base64
 from openai import OpenAI
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -49,9 +52,7 @@ def translate():
     
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
     if "chat_history1" not in st.session_state:
-        st.session_state.chat_history1 = [
-     
-        ]
+        st.session_state.chat_history1 = []
     
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vector_store()
@@ -77,6 +78,18 @@ def translate():
                 response = get_response_(translation_prompt + " " + pdf_text)
                 st.write(response)
                 st.session_state.chat_history1.append(AIMessage(content=response))
+                
+                # Create PDF
+                pdf_buffer = BytesIO()
+                pdf = canvas.Canvas(pdf_buffer, pagesize=letter)
+                pdf.drawString(100, 750, response)
+                pdf.save()
+                
+                # Provide download link
+                pdf_buffer.seek(0)
+                b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
+                href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="translation.pdf">Download PDF</a>'
+                st.markdown(href, unsafe_allow_html=True)
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():
