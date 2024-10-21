@@ -57,14 +57,6 @@ def translate():
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vector_store()
 
-    for message in st.session_state.chat_history1:
-        if isinstance(message, AIMessage):
-            with st.chat_message("AI", avatar="🤖"):
-                st.write(message.content)
-        elif isinstance(message, HumanMessage):
-            with st.chat_message("Human", avatar="👨‍⚕️"):
-                st.write(message.content)
-
     pdf_text = ""
     if uploaded_file:
         with st.spinner("Reading PDF..."):
@@ -85,10 +77,10 @@ def translate():
                 pdf.drawString(100, 750, response)
                 pdf.save()
                 
-                # Provide download link
+                # Provide download button
                 pdf_buffer.seek(0)
                 b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
-                href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="translation.pdf">Download PDF</a>'
+                href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="translation.pdf">🡇 Download Translation as PDF</a>'
                 st.markdown(href, unsafe_allow_html=True)
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
