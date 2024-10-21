@@ -24,7 +24,6 @@ client = OpenAI()
 def translate():
     if "translate_state" not in st.session_state:
         st.session_state.translate_state = {}
-    
     with open('style.css') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
@@ -36,7 +35,6 @@ def translate():
         
         st.markdown(
             f"""
-            <div class="st-emotion-cache-18ni7ap ezrtsby2">
                 <img class="profileImage" src="{imgUrl}" alt="Your Photo">
                 <div class="textContainer">
                     <div class="title"><p>{title}</p></div>
@@ -44,15 +42,14 @@ def translate():
                     <p>{profession}</p>
                     <p>Powered by DSAH Information Technology</p>
                 </div>
-            </div>
             """,
             unsafe_allow_html=True,
         )
     
-    uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
+        uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
     if "chat_history1" not in st.session_state:
         st.session_state.chat_history1 = [
-     
+          
         ]
     
     if "vector_store" not in st.session_state:
@@ -62,6 +59,28 @@ def translate():
         if isinstance(message, AIMessage):
             with st.chat_message("AI", avatar="🤖"):
                 st.write(message.content)
+                # Add copy and download icons
+                copy_download_html = f"""
+                <div>
+                    <i class="fas fa-copy" onclick="copyToClipboard('{message.content}')" style="cursor: pointer; margin-right: 10px;"></i>
+                    <i class="fas fa-download" onclick="downloadPDF('{message.content}')" style="cursor: pointer;"></i>
+                </div>
+                <script>
+                    function copyToClipboard(text) {{
+                        navigator.clipboard.writeText(text).then(() => {{
+                            alert('Copied to clipboard!');
+                        }});
+                    }}
+
+                    function downloadPDF(text) {{
+                        var pdf = new jsPDF();
+                        pdf.text(text, 10, 10);
+                        pdf.save('translation.pdf');
+                    }}
+                </script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+                """
+                st.components.v1.html(copy_download_html)
         elif isinstance(message, HumanMessage):
             with st.chat_message("Human", avatar="👨‍⚕️"):
                 st.write(message.content)
@@ -75,10 +94,11 @@ def translate():
         
         if st.button("Translate The Medical Report"):
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
+            # Append translation to chat history
+            response = get_response_(translation_prompt + " " + pdf_text)
+            st.session_state.chat_history1.append(AIMessage(content=response))
             with st.chat_message("AI", avatar="🤖"):
-                response = get_response_(translation_prompt + " " + pdf_text)
                 st.write(response)
-                st.session_state.chat_history1.append(AIMessage(content=response))
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():

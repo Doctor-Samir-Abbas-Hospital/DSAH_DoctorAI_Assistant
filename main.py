@@ -7,14 +7,19 @@ import translate
 st.set_page_config(
     page_title="Doctor AI Assistant",
     page_icon="assets/Dsahicon.png",
-    initial_sidebar_state="collapsed"
 )
 
 # Create the navigation bar with styles
 pages = ["AI Doctor Assistant", "Medical Report Translator"]
 styles = {
     "nav": {
-        "background-color": "#002060",
+        "position":"relative",
+        "display":"flex !important",
+        "justify-content":"center",
+        "align-items":"center",
+        "flex-direction":"row",
+        "z-index":"0",
+        "background-color": "#990033",
         "color":"white",
         "fontsize":"0.5rem",
     },

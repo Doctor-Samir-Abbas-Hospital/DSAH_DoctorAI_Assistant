@@ -13,3 +13,5 @@ audio_recorder_streamlit
 streamlit_extras
 PyPDF2
 streamlit_navigation_bar
+base64
+fpdf
