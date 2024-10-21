@@ -5,12 +5,10 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_community.vectorstores.qdrant import Qdrant
 import qdrant_client
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
-import base64
-from openai import OpenAI
-from langchain.chains.combine_documents import create_stuff_documents_chain
+from fpdf import FPDF  # Make sure to install fpdf with pip
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -46,12 +44,12 @@ def translate():
             """,
             unsafe_allow_html=True,
         )
-    
+        
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
+        translate_button = st.button("Translate The Medical Report")
+
     if "chat_history1" not in st.session_state:
-        st.session_state.chat_history1 = [
-     
-        ]
+        st.session_state.chat_history1 = []
     
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vector_store()
@@ -65,18 +63,50 @@ def translate():
                 st.write(message.content)
 
     pdf_text = ""
+    translated_text = ""  # To store the translation
+
     if uploaded_file:
-        with st.spinner("Reading PDF..."):
-            reader = PdfReader(uploaded_file)
-            for page in reader.pages:
-                pdf_text += page.extract_text()
-        
-        if st.button("Translate The Medical Report"):
+        # Show the typewriter loader when translating
+        if translate_button:
+            st.markdown("""
+                <div class="typewriter">
+                    <div class="slide"><i></i></div>
+                    <div class="paper"></div>
+                    <div class="keyboard"></div>
+                </div>
+            """, unsafe_allow_html=True)
+
+            with st.spinner("Reading PDF..."):
+                reader = PdfReader(uploaded_file)
+                for page in reader.pages:
+                    pdf_text += page.extract_text()
+
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
             with st.chat_message("AI", avatar="🤖"):
                 response = get_response_(translation_prompt + " " + pdf_text)
                 st.write(response)
                 st.session_state.chat_history1.append(AIMessage(content=response))
+                translated_text = response  # Save the translation
+
+            # Hide the typewriter loader after translation
+            st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
+
+    # Always show download button, active if translated text is available
+    if translated_text:
+        # Create a PDF from the translated text
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(0, 10, translated_text)
+
+        # Save the PDF to a temporary file
+        pdf_output = "translated_report.pdf"
+        pdf.output(pdf_output)
+
+        with open(pdf_output, "rb") as f:
+            st.sidebar.download_button("Download Translated Report", f, file_name="translated_report.pdf", mime="application/pdf")
+    else:
+        st.sidebar.button("Download Translated Report", disabled=True)
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():
@@ -92,3 +122,4 @@ def translate():
 
 if __name__ == "__main__":
     translate()
+
