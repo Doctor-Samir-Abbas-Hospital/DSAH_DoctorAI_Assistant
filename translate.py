@@ -8,8 +8,6 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
-from fpdf import FPDF
-import base64
 from openai import OpenAI
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from utils.functions import (
@@ -50,7 +48,9 @@ def translate():
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
     if "chat_history1" not in st.session_state:
         st.session_state.chat_history1 = [
-        
+          AIMessage(
+                content="Hello! I am  medical translation assistant. Please upload your PDF file and press the Translate report button."
+            )
         ]
     
     if "vector_store" not in st.session_state:
@@ -60,32 +60,6 @@ def translate():
         if isinstance(message, AIMessage):
             with st.chat_message("AI", avatar="🤖"):
                 st.write(message.content)
-                # Add copy icon
-                copy_html = f"""
-                <div>
-                    <i class="fas fa-copy" onclick="copyToClipboard('{message.content}')" style="cursor: pointer;"></i>
-                </div>
-                <script>
-                    function copyToClipboard(text) {{
-                        navigator.clipboard.writeText(text).then(() => {{
-                            alert('Copied to clipboard!');
-                        }});
-                    }}
-                </script>
-                """
-                st.components.v1.html(copy_html)
-                # Add download as PDF button
-                if st.button("Download as PDF", key=f"download_{message.content}"):
-                    pdf = FPDF()
-                    pdf.add_page()
-                    pdf.set_font("Arial", size=12)
-                    pdf.multi_cell(0, 10, message.content)
-                    pdf_output = f"{message.content[:50]}.pdf"
-                    pdf.output(pdf_output)
-                    with open(pdf_output, "rb") as f:
-                        base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-                    href = f'<a href="data:application/octet-stream;base64,{base64_pdf}" download="{pdf_output}">Download PDF</a>'
-                    st.markdown(href, unsafe_allow_html=True)
         elif isinstance(message, HumanMessage):
             with st.chat_message("Human", avatar="👨‍⚕️"):
                 st.write(message.content)
