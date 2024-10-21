@@ -8,7 +8,6 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
-import base64
 from openai import OpenAI
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from utils.functions import (
