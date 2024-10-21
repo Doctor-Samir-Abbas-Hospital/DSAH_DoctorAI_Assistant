@@ -14,4 +14,3 @@ streamlit_extras
 PyPDF2
 streamlit_navigation_bar
 fpdf
-reportlab
