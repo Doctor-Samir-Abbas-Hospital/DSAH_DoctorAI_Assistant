@@ -62,10 +62,14 @@ def translate():
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
         
         if "last_translation" in st.session_state:
-            pdf_buffer = create_pdf(st.session_state.last_translation)
-            b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
-            download_button = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="translation.pdf">🡇 Download Translation as PDF</a>'
-            st.markdown(download_button, unsafe_allow_html=True)
+            st.success("Translation complete! Ready for download.")
+        
+        if st.button("Download Translation as PDF"):
+            if "last_translation" in st.session_state:
+                pdf_buffer = create_pdf(st.session_state.last_translation)
+                b64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
+                href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="translation.pdf">Click here to download</a>'
+                st.markdown(href, unsafe_allow_html=True)
 
     if "chat_history1" not in st.session_state:
         st.session_state.chat_history1 = []
@@ -95,6 +99,7 @@ def translate():
                 st.write(response)
                 st.session_state.chat_history1.append(AIMessage(content=response))
                 st.session_state.last_translation = response
+                st.success("Translation complete! Ready for download.")
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
     if user_query and user_query.strip():
@@ -108,6 +113,7 @@ def translate():
             st.write(response)
             st.session_state.chat_history1.append(AIMessage(content=response))
             st.session_state.last_translation = response
+            st.success("Translation complete! Ready for download.")
 
 if __name__ == "__main__":
     translate()
