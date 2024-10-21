@@ -11,8 +11,7 @@ from PyPDF2 import PdfReader
 import base64
 from openai import OpenAI
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from fpdf import FPDF
 from io import BytesIO
 from utils.functions import (
     get_vector_store,
@@ -73,9 +72,11 @@ def translate():
                 
                 # Create PDF
                 pdf_buffer = BytesIO()
-                pdf = canvas.Canvas(pdf_buffer, pagesize=letter)
-                pdf.drawString(100, 750, response)
-                pdf.save()
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.set_font("Arial", size=12)
+                pdf.multi_cell(0, 10, response)
+                pdf.output(pdf_buffer)
                 
                 # Provide download button
                 pdf_buffer.seek(0)
