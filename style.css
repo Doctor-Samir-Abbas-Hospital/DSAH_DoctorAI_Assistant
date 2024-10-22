@@ -23,6 +23,7 @@ div.ezrtsby2{
 [data-testid="stSidebar"] {
   position: absolute;
   margin-bottom: 40px;
+  width: 400px;
   background-color: #990033;
   background-image: linear-gradient(to right, #990033, rgb(46, 1, 1));
 }
