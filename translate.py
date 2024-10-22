@@ -113,8 +113,8 @@ def translate():
             mime="application/pdf"
         )
 
-    else:
-        # If there is no translated text, disable the download button
+    # Check if the file is uploaded and translation has happened
+    elif uploaded_file and not translated_text:
         st.sidebar.button("Download Translated Report", disabled=True)
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
@@ -131,6 +131,7 @@ def translate():
 
 if __name__ == "__main__":
     translate()
+
 
 
 
