@@ -13,6 +13,7 @@ from utils.functions import (
     get_vector_store,
     get_response_,
 )
+from io import BytesIO  # For handling PDF output in memory
 
 # Load environment variables
 load_dotenv()
@@ -100,14 +101,20 @@ def translate():
         pdf.multi_cell(0, 10, translated_text)
 
         # Save the PDF to a BytesIO object
-        from io import BytesIO
         pdf_output = BytesIO()
         pdf.output(pdf_output)
         pdf_output.seek(0)  # Move to the beginning of the BytesIO object
 
-        st.sidebar.download_button("Download Translated Report", pdf_output, file_name="translated_report.pdf", mime="application/pdf")
+        # Display the download button in the sidebar
+        st.sidebar.download_button(
+            label="Download Translated Report",
+            data=pdf_output,
+            file_name="translated_report.pdf",
+            mime="application/pdf"
+        )
 
     else:
+        # If there is no translated text, disable the download button
         st.sidebar.button("Download Translated Report", disabled=True)
 
     user_query = st.chat_input("Type your message here...", key="translate_chat_input")
@@ -124,5 +131,6 @@ def translate():
 
 if __name__ == "__main__":
     translate()
+
 
 
