@@ -23,7 +23,6 @@ div.ezrtsby2{
 [data-testid="stSidebar"] {
   position: absolute;
   margin-bottom: 40px;
-  width: 400px;
   background-color: #990033;
   background-image: linear-gradient(to right, #990033, rgb(46, 1, 1));
 }
@@ -490,3 +489,5 @@ div.st-emotion-cache-1up18o9.e1d2x3se2 {
       60px 10px 0 var(--key), 68px 10px 0 var(--key), 83px 10px 0 var(--key);
   }
 }
+
+
