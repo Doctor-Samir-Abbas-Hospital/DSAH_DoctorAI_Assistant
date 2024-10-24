@@ -21,7 +21,7 @@ from utils.functions import (
 load_dotenv()
 
 # Register Arabic font (Arial)
-pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+pdfmetrics.registerFont(TTFont('Arial', 'assets/Arial.ttf'))
 addMapping('Arial', 0, 0, 'Arial')
 
 def reshape_arabic_text(text):
