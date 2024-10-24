@@ -20,6 +20,13 @@ load_dotenv()
 
 client = OpenAI()
 
+class PDF(FPDF):
+    def header(self):
+        pass
+
+    def footer(self):
+        pass
+
 def translate():
     if "translate_state" not in st.session_state:
         st.session_state.translate_state = {}
@@ -91,13 +98,15 @@ def translate():
             st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
     if translated_text:
-        pdf = FPDF()
+        pdf = PDF()
         pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        pdf.multi_cell(0, 10, translated_text.encode('latin-1', 'replace').decode('latin-1'))
+        font_path = os.path.join('assets', 'DejaVuSans.ttf')
+        pdf.add_font("DejaVu", "", font_path, uni=True)
+        pdf.set_font("DejaVu", size=12)
+        pdf.multi_cell(0, 10, translated_text)
 
         pdf_output = BytesIO()
-        pdf_output.write(pdf.output(dest='S').encode('latin-1'))
+        pdf.output(pdf_output, dest='S')
         pdf_output.seek(0)
 
         st.sidebar.download_button(
