@@ -57,7 +57,6 @@ def create_pdf(translated_text):
     width, height = A4
     margin = inch
     text_width = width - 2 * margin  # Calculate usable text width
-    text_height = height - 2 * margin
 
     # Prepare text
     reshaped_text = reshape_arabic_text(clean_text(translated_text))
@@ -65,21 +64,8 @@ def create_pdf(translated_text):
 
     y = height - margin  # Start drawing text just below the margin
 
-    # Set up text object
+    # Set font size
     c.setFont("Arial", 12)
-    
-    # Add the title
-    c.setFont('Arial', 18)
-    title_text = "تقرير طبي شامل"
-    bidi_title = reshape_arabic_text(title_text)
-    c.drawRightString(width - margin, y, bidi_title)
-
-    # Draw a horizontal line
-    c.setLineWidth(0.5)
-    c.setStrokeColor(colors.black)
-    c.line(margin, y - 0.5 * inch, width - margin, y - 0.5 * inch)
-    
-    y -= inch
 
     # Right-align text for RTL Arabic
     for line in lines:
