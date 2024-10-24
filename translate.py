@@ -16,8 +16,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
-from reportlab.lib import colors
+from reportlab.lib import colors  # Fix added: importing colors
 from reportlab.lib.fonts import addMapping
+from reportlab.lib.utils import simpleSplit
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -55,12 +56,12 @@ def create_pdf(translated_text):
     # Set up page sizes and margins
     width, height = A4
     margin = inch
-    text_width = width - 2 * margin
+    text_width = width - 2 * margin  # Calculate the usable text width
     text_height = height - 2 * margin
 
     # Prepare text
     reshaped_text = reshape_arabic_text(clean_text(translated_text))
-    lines = reshaped_text.split('\n')  # Split by lines to handle text
+    lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)  # Split by lines with proper width
 
     y = height - margin  # Start drawing text just below the margin
 
@@ -68,7 +69,6 @@ def create_pdf(translated_text):
     textobject = c.beginText()
     textobject.setFont("Arial", 12)
     textobject.setTextOrigin(width - margin, y)  # Right-align starting point
-    textobject.setWordSpace(-2)  # Adjust word spacing for justification
     
     # Add the title
     c.setFont('Arial', 18)
@@ -85,8 +85,8 @@ def create_pdf(translated_text):
 
     # Draw text lines and handle pagination
     for line in lines:
-        if y < margin:  # Check if space is available, otherwise start a new page
-            c.drawText(textobject)  # Draw the text for the current page
+        if y < margin:  # If not enough space, move to the next page
+            c.drawText(textobject)
             c.showPage()
             textobject = c.beginText()
             textobject.setFont("Arial", 12)
