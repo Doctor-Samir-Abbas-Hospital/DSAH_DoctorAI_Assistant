@@ -116,7 +116,7 @@ def translate():
         pdf.add_page()
 
         # Add a font that supports Arabic (or non-Latin) characters
-        pdf.add_font('DejaVu', '', 'DejaVuSans.ttf', uni=True)
+        pdf.add_font('DejaVu', '', 'DejaVuSans.ttf', uni=True)  # Update the path if necessary
         pdf.set_font('DejaVu', '', 12)
 
         # Use the translated text
@@ -154,4 +154,5 @@ def translate():
 
 if __name__ == "__main__":
     translate()
+
 
