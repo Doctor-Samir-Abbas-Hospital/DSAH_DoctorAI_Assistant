@@ -8,13 +8,12 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
-from fpdf import FPDF  # Ensure you have fpdf installed
-from fpdf2 import FPDF as FPDF2  # Import fpdf2
+from fpdf import FPDF
 from utils.functions import (
     get_vector_store,
     get_response_,
 )
-from io import BytesIO  # For handling PDF output in memory
+from io import BytesIO
 
 # Load environment variables
 load_dotenv()
@@ -92,9 +91,8 @@ def translate():
             st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
     if translated_text:
-        pdf = FPDF2()
+        pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial", size=12)
         pdf.add_font("DejaVu", "", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", uni=True)
         pdf.set_font("DejaVu", size=12)
         pdf.multi_cell(0, 10, translated_text)
@@ -130,5 +128,3 @@ def translate():
 
 if __name__ == "__main__":
     translate()
-
-
