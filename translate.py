@@ -16,6 +16,7 @@ from utils.functions import (
     get_vector_store,
     get_response_,
 )
+
 # Load environment variables
 load_dotenv()
 
@@ -104,16 +105,21 @@ def translate():
         pdf = PDF()
         pdf.add_page()
         
-        # Path to a font that supports Arabic (replace with actual path to an Arabic font)
-        font_path = os.path.join('assets', 'Cairo-Regular.ttf')  
-        pdf.add_font("Cairo", "", font_path, uni=True)
-        pdf.set_font("Cairo", size=12)
+        # Path to Arial font (system default if installed, or local path if using local file)
+        # If Arial is available on the system, no need to provide a local path.
+        font_path = os.path.join('assets', 'arial.ttf')  # Change this to the actual path if you need to use a local version.
+        
+        # Add the font (you can skip the path if Arial is installed on the system)
+        pdf.add_font("Arial", "", font_path, uni=True)
+        pdf.set_font("Arial", size=12)
         
         # Reshape and display Arabic text correctly
         reshaped_text = arabic_reshaper.reshape(translated_text)
         bidi_text = get_display(reshaped_text)  # Fix the bidi formatting for Arabic text
 
-        pdf.multi_cell(0, 10, bidi_text)
+        # Output properly formatted Arabic text in the PDF
+        pdf.set_right_margin(10)  # Add right margin for better alignment
+        pdf.multi_cell(0, 10, bidi_text, align='R')  # Align to the right
 
         pdf_output = BytesIO()
         
