@@ -107,7 +107,7 @@ def translate():
         
         # Path to Arial font (system default if installed, or local path if using local file)
         # If Arial is available on the system, no need to provide a local path.
-        font_path = os.path.join('assets', 'arial.ttf')  # Change this to the actual path if you need to use a local version.
+        font_path = os.path.join('assets', 'Arial.ttf')  # Change this to the actual path if you need to use a local version.
         
         # Add the font (you can skip the path if Arial is installed on the system)
         pdf.add_font("Arial", "", font_path, uni=True)
