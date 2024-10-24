@@ -54,7 +54,10 @@ def translate():
         )
         
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
-        translate_button = st.button("Translate The Medical Report")
+
+        # Show the translate button only if a file is uploaded
+        if uploaded_file:
+            translate_button = st.button("Translate The Medical Report")
 
     if "chat_history1" not in st.session_state:
         st.session_state.chat_history1 = []
@@ -73,29 +76,28 @@ def translate():
     pdf_text = ""
     translated_text = ""
 
-    if uploaded_file:
-        if translate_button:
-            st.markdown("""
-                <div class="typewriter">
-                    <div class="slide"><i></i></div>
-                    <div class="paper"></div>
-                    <div class="keyboard"></div>
-                </div>
-            """, unsafe_allow_html=True)
+    if uploaded_file and translate_button:
+        st.markdown("""
+            <div class="typewriter">
+                <div class="slide"><i></i></div>
+                <div class="paper"></div>
+                <div class="keyboard"></div>
+            </div>
+        """, unsafe_allow_html=True)
 
-            with st.spinner("Reading PDF..."):
-                reader = PdfReader(uploaded_file)
-                for page in reader.pages:
-                    pdf_text += page.extract_text()
+        with st.spinner("Reading PDF..."):
+            reader = PdfReader(uploaded_file)
+            for page in reader.pages:
+                pdf_text += page.extract_text()
 
-            translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
-            with st.chat_message("AI", avatar="🤖"):
-                response = get_response_(translation_prompt + " " + pdf_text)
-                st.write(response)
-                st.session_state.chat_history1.append(AIMessage(content=response))
-                translated_text = response
+        translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
+        with st.chat_message("AI", avatar="🤖"):
+            response = get_response_(translation_prompt + " " + pdf_text)
+            st.write(response)
+            st.session_state.chat_history1.append(AIMessage(content=response))
+            translated_text = response
 
-            st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
+        st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
     if translated_text:
         pdf = PDF()
@@ -106,7 +108,7 @@ def translate():
         pdf.multi_cell(0, 10, translated_text)
 
         pdf_output = BytesIO()
-        pdf.output(pdf_output)
+        pdf.output(pdf_output, 'F')
         pdf_output.seek(0)
 
         st.sidebar.download_button(
