@@ -30,9 +30,16 @@ class PDF(FPDF):
         pass
 
 def translate():
+    # Initialize session state variables
     if "translate_state" not in st.session_state:
         st.session_state.translate_state = {}
+
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []  # Initialize chat_history
     
+    if "vector_store" not in st.session_state:
+        st.session_state.vector_store = get_vector_store()
+
     with open('style.css') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
@@ -61,13 +68,7 @@ def translate():
         if uploaded_file:
             translate_button = st.button("Translate The Medical Report")
 
-    if "chat_history1" not in st.session_state:
-        st.session_state.chat_history1 = []
-    
-    if "vector_store" not in st.session_state:
-        st.session_state.vector_store = get_vector_store()
-
-    for message in st.session_state.chat_history1:
+    for message in st.session_state.chat_history:
         if isinstance(message, AIMessage):
             with st.chat_message("AI", avatar="🤖"):
                 st.write(message.content)
@@ -96,7 +97,7 @@ def translate():
         with st.chat_message("AI", avatar="🤖"):
             response = get_response_(translation_prompt + " " + pdf_text)
             st.write(response)
-            st.session_state.chat_history1.append(AIMessage(content=response))
+            st.session_state.chat_history.append(AIMessage(content=response))
             translated_text = response
 
         st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
@@ -106,12 +107,11 @@ def translate():
         pdf.add_page()
         
         # Path to Arial font (system default if installed, or local path if using local file)
-        # If Arial is available on the system, no need to provide a local path.
         font_path = os.path.join('assets', 'Arial.ttf')  # Change this to the actual path if you need to use a local version.
         
         # Add the font (you can skip the path if Arial is installed on the system)
         pdf.add_font("Arial", "", font_path, uni=True)
-        pdf.set_font("Arial", size=12)
+        pdf.set_font("Arial", size=14)
         
         # Reshape and display Arabic text correctly
         reshaped_text = arabic_reshaper.reshape(translated_text)
@@ -155,3 +155,4 @@ def translate():
 
 if __name__ == "__main__":
     translate()
+
