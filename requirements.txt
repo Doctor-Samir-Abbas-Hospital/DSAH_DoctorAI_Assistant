@@ -15,6 +15,7 @@ streamlit_autorefresh
 PyPDF2
 streamlit_navigation_bar
 fpdf
+reportlab
 arabic_reshaper 
 python-bidi
 flask
