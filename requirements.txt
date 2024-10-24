@@ -10,6 +10,7 @@ pypdf
 openai
 streamlit_float
 audio_recorder_streamlit
+streamlit-audiorec
 streamlit_extras
 streamlit_autorefresh
 PyPDF2
