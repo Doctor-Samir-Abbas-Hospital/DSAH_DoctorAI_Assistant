@@ -18,7 +18,6 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from reportlab.lib import colors
 from reportlab.lib.fonts import addMapping
-from reportlab.lib.utils import simpleSplit
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -61,16 +60,17 @@ def create_pdf(translated_text):
 
     # Prepare text
     reshaped_text = reshape_arabic_text(clean_text(translated_text))
-    lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)
-    
-    y = height - margin
+    lines = reshaped_text.split('\n')  # Split by lines to handle text
 
+    y = height - margin  # Start drawing text just below the margin
+
+    # Set up text object
     textobject = c.beginText()
     textobject.setFont("Arial", 12)
     textobject.setTextOrigin(width - margin, y)  # Right-align starting point
     textobject.setWordSpace(-2)  # Adjust word spacing for justification
     
-    # Draw the title on the first page
+    # Add the title
     c.setFont('Arial', 18)
     title_text = "تقرير طبي شامل"
     bidi_title = reshape_arabic_text(title_text)
@@ -83,19 +83,22 @@ def create_pdf(translated_text):
     
     y -= 2 * inch
 
-    # Render the text and handle pagination
+    # Draw text lines and handle pagination
     for line in lines:
-        if y < margin:
-            c.drawText(textobject)
+        if y < margin:  # Check if space is available, otherwise start a new page
+            c.drawText(textobject)  # Draw the text for the current page
             c.showPage()
             textobject = c.beginText()
             textobject.setFont("Arial", 12)
-            textobject.setTextOrigin(width - margin, height - margin)  # Start from the top of the new page
+            textobject.setTextOrigin(width - margin, height - margin)
             y = height - margin
 
-        textobject.textOut(line)  # Draw text from right to left (RTL)
-        textobject.moveCursor(0, -14)  # Move cursor down for the next line
+        # Right-align text for RTL Arabic
+        textobject.setTextOrigin(width - margin, y)
+        textobject.textLine(line)
+        y -= 14  # Move down for the next line
 
+    # Finalize the text object and save the PDF
     c.drawText(textobject)
     c.showPage()
     c.save()
