@@ -9,6 +9,7 @@ from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
 from fpdf import FPDF  # Ensure you have fpdf installed
+from fpdf2 import FPDF as FPDF2  # Import fpdf2
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -64,7 +65,7 @@ def translate():
                 st.write(message.content)
 
     pdf_text = ""
-    translated_text = ""  # To store the translation
+    translated_text = ""
 
     if uploaded_file:
         if translate_button:
@@ -86,14 +87,16 @@ def translate():
                 response = get_response_(translation_prompt + " " + pdf_text)
                 st.write(response)
                 st.session_state.chat_history1.append(AIMessage(content=response))
-                translated_text = response  # Save the translation
+                translated_text = response
 
             st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
     if translated_text:
-        pdf = FPDF()
+        pdf = FPDF2()
         pdf.add_page()
         pdf.set_font("Arial", size=12)
+        pdf.add_font("DejaVu", "", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", uni=True)
+        pdf.set_font("DejaVu", size=12)
         pdf.multi_cell(0, 10, translated_text)
 
         pdf_output = BytesIO()
