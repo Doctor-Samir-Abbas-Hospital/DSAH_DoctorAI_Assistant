@@ -93,9 +93,8 @@ def translate():
     if translated_text:
         pdf = FPDF()
         pdf.add_page()
-        pdf.add_font("DejaVu", "", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", uni=True)
-        pdf.set_font("DejaVu", size=12)
-        pdf.multi_cell(0, 10, translated_text)
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(0, 10, translated_text.encode('latin-1', 'replace').decode('latin-1'))
 
         pdf_output = BytesIO()
         pdf.output(pdf_output)
