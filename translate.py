@@ -13,11 +13,12 @@ import arabic_reshaper  # To reshape Arabic text
 from bidi.algorithm import get_display  # To handle bidirectional text
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
+from reportlab.lib import colors
 from reportlab.lib.fonts import addMapping
+from reportlab.lib.utils import simpleSplit
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -39,7 +40,7 @@ def reshape_arabic_text(text):
 
 def clean_text(text):
     """Removes unwanted characters and cleans the text."""
-    return text.replace('*', '')
+    return text.replace('*', '').replace('#', '')
 
 def create_pdf(translated_text):
     """Creates a well-formatted PDF using ReportLab."""
@@ -55,35 +56,47 @@ def create_pdf(translated_text):
     # Set up page sizes and margins
     width, height = A4
     margin = inch
-    c.translate(margin, height - margin)
+    text_width = width - 2 * margin
+    text_height = height - 2 * margin
 
-    # Add a title
+    # Prepare text
+    c.setFont('Arial', 12)
+    reshaped_text = reshape_arabic_text(clean_text(translated_text))
+    lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)
+    
+    y = height - margin
+
+    textobject = c.beginText()
+    textobject.setFont("Arial", 12)
+    textobject.setTextOrigin(margin, y)
+    
+    # Draw the title on the first page
     c.setFont('Arial', 18)
     title_text = "تقرير طبي شامل"
     bidi_title = reshape_arabic_text(title_text)
-    c.drawRightString(width - inch, -inch, bidi_title)
+    c.drawRightString(width - inch, y - inch, bidi_title)
 
-    # Add a horizontal line
+    # Draw a horizontal line
     c.setLineWidth(0.5)
     c.setStrokeColor(colors.black)
-    c.line(inch, -1.5 * inch, width - inch, -1.5 * inch)
-
-    # Add the body of the report
-    c.setFont('Arial', 12)
-    bidi_text = reshape_arabic_text(clean_text(translated_text))
+    c.line(margin, y - 1.5 * inch, width - margin, y - 1.5 * inch)
     
-    # Draw the report text, starting from the right
-    lines = bidi_text.split('\n')
-    y = -2 * inch
+    y -= 2 * inch
+
+    # Render the text and handle pagination
     for line in lines:
-        c.drawRightString(width - inch, y, line)
-        y -= 14  # Line spacing
+        if y < margin:
+            c.drawText(textobject)
+            c.showPage()
+            textobject = c.beginText()
+            textobject.setFont("Arial", 12)
+            textobject.setTextOrigin(margin, height - margin)
+            y = height - margin
 
-    # Add page number
-    c.setFont("Arial", 10)
-    c.drawRightString(width - inch, -11 * inch, "Page 1")
+        textobject.textLine(line)
+        y -= 14  # Adjust line spacing
 
-    # Finish the PDF
+    c.drawText(textobject)
     c.showPage()
     c.save()
 
@@ -193,3 +206,4 @@ def translate():
 
 if __name__ == "__main__":
     translate()
+
