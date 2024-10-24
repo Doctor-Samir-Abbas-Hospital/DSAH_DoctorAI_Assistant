@@ -19,7 +19,6 @@ fpdf
 reportlab
 arabic_reshaper 
 python-bidi
-pyaudio
 flask
 flask-cors
 gunicorn

@@ -1,6 +1,4 @@
 import os
-import pyaudio
-import wave
 import base64
 from dotenv import load_dotenv
 import streamlit as st
@@ -17,65 +15,14 @@ from utils.functions import (
     text_to_audio,
 )
 
-# PyAudio configuration
-FORMAT = pyaudio.paInt16
-CHANNELS = 2
-RATE = 44100
-CHUNK = 1024
-WAVE_OUTPUT_FILENAME = "output.wav"
 
-# Initialize PyAudio
-audio = pyaudio.PyAudio()
-
-# Global stream and frames for recording
-stream = None
-frames = []
 
 # Initialize OpenAI Client
 load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key=openai_api_key)
 
-# Start recording function
-def start_recording():
-    global stream, frames
-    frames = []  # Reset frames list
-    stream = audio.open(
-        format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK
-    )
-    print("Recording started...")
-
-
-# Stop recording and save audio as base64
-def stop_recording():
-    global stream, frames
-    if stream:
-        stream.stop_stream()
-        stream.close()
-        print("Recording stopped.")
-
-        # Save the recorded audio as a WAV file
-        with wave.open(WAVE_OUTPUT_FILENAME, "wb") as wf:
-            wf.setnchannels(CHANNELS)
-            wf.setsampwidth(audio.get_sample_size(FORMAT))
-            wf.setframerate(RATE)
-            wf.writeframes(b"".join(frames))
-
-        # Read the file and convert it to base64
-        with open(WAVE_OUTPUT_FILENAME, "rb") as audio_file:
-            audio_base64 = base64.b64encode(audio_file.read()).decode("utf-8")
-
-        return audio_base64
-
-
-# Stream audio data continuously while recording
-def stream_audio_data():
-    global stream, frames
-    if stream:
-        data = stream.read(CHUNK)
-        frames.append(data)
-
-
+#
 # Main app function
 def app():
     # Read CSS file
@@ -173,20 +120,7 @@ def app():
         height=0,
     )
 
-    # Check if we received a start/stop recording event from the frontend
-    msg = st.query_params.get(
-        "msg", None
-    )  # Use st.query_params instead of experimental
-    if msg:
-        if msg == "start_recording":
-            start_recording()
-        elif msg == "stop_recording":
-            audio_base64 = stop_recording()
-            if audio_base64:
-                # Process the base64 audio here, convert to text and send to your model
-                with st.spinner("Transcribing..."):
-                    transcript = speech_to_text(audio_base64)
-                    user_query = transcript
+    
 
     if user_input is not None and user_input != "":
         user_query = user_input
@@ -225,5 +159,3 @@ def app():
 if __name__ == "__main__":
     app()
 
-# Close PyAudio when app ends
-audio.terminate()
