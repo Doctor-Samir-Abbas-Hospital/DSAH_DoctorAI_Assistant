@@ -60,7 +60,6 @@ def create_pdf(translated_text):
     text_height = height - 2 * margin
 
     # Prepare text
-    c.setFont('Arial', 12)
     reshaped_text = reshape_arabic_text(clean_text(translated_text))
     lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)
     
@@ -68,7 +67,8 @@ def create_pdf(translated_text):
 
     textobject = c.beginText()
     textobject.setFont("Arial", 12)
-    textobject.setTextOrigin(margin, y)
+    textobject.setTextOrigin(width - margin, y)  # Right-align starting point
+    textobject.setWordSpace(-2)  # Adjust word spacing for justification
     
     # Draw the title on the first page
     c.setFont('Arial', 18)
@@ -90,11 +90,11 @@ def create_pdf(translated_text):
             c.showPage()
             textobject = c.beginText()
             textobject.setFont("Arial", 12)
-            textobject.setTextOrigin(margin, height - margin)
+            textobject.setTextOrigin(width - margin, height - margin)  # Start from the top of the new page
             y = height - margin
 
-        textobject.textLine(line)
-        y -= 14  # Adjust line spacing
+        textobject.textOut(line)  # Draw text from right to left (RTL)
+        textobject.moveCursor(0, -14)  # Move cursor down for the next line
 
     c.drawText(textobject)
     c.showPage()
@@ -162,19 +162,21 @@ def translate():
             </div>
         """, unsafe_allow_html=True)
 
-        with st.spinner("Reading PDF..."):
-            reader = PdfReader(uploaded_file)
-            for page in reader.pages:
-                pdf_text += page.extract_text()
+        # Add spinner below the typewriter
+        with st.spinner("Please wait, it's translating the text..."):
+            with st.spinner("Reading PDF..."):
+                reader = PdfReader(uploaded_file)
+                for page in reader.pages:
+                    pdf_text += page.extract_text()
 
-        translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
-        with st.chat_message("AI", avatar="🤖"):
-            response = get_response_(translation_prompt + " " + pdf_text)
-            st.write(response)
-            st.session_state.chat_history1.append(AIMessage(content=response))
-            translated_text = response
+            translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
+            with st.chat_message("AI", avatar="🤖"):
+                response = get_response_(translation_prompt + " " + pdf_text)
+                st.write(response)
+                st.session_state.chat_history1.append(AIMessage(content=response))
+                translated_text = response
 
-        st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
+            st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
     if translated_text:
         pdf_buffer = create_pdf(translated_text)
@@ -206,4 +208,3 @@ def translate():
 
 if __name__ == "__main__":
     translate()
-
