@@ -106,12 +106,12 @@ def translate():
         pdf.multi_cell(0, 10, translated_text)
 
         pdf_output = BytesIO()
-        pdf.output(pdf_output, dest='F')
-        pdf_content = pdf_output.getvalue()
+        pdf.output(pdf_output)
+        pdf_output.seek(0)
 
         st.sidebar.download_button(
             label="Download Translated Report",
-            data=pdf_content,
+            data=pdf_output,
             file_name="translated_report.pdf",
             mime="application/pdf"
         )
