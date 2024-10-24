@@ -12,7 +12,10 @@ from fpdf import FPDF
 from io import BytesIO
 import arabic_reshaper  # To reshape Arabic text
 from bidi.algorithm import get_display  # To handle bidirectional text
-
+from utils.functions import (
+    get_vector_store,
+    get_response_,
+)
 # Load environment variables
 load_dotenv()
 
