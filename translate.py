@@ -3,39 +3,22 @@ from dotenv import load_dotenv
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_community.vectorstores.qdrant import Qdrant
+import qdrant_client
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
-from fpdf import FPDF
-from utils.functions import get_vector_store, get_response_
-from io import BytesIO
+from fpdf import FPDF  # Ensure you have fpdf installed
+from utils.functions import (
+    get_vector_store,
+    get_response_,
+)
+from io import BytesIO  # For handling PDF output in memory
 
 # Load environment variables
 load_dotenv()
 
 client = OpenAI()
-
-# Custom FPDF class to support Unicode (UTF-8)
-class PDF(FPDF):
-    def header(self):
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'Translated Medical Report', 0, 1, 'C')
-
-# Function to add copy-paste functionality
-copy_js = """
-    function copyToClipboard(text) {
-        var tempInput = document.createElement("textarea");
-        tempInput.style.position = "absolute";
-        tempInput.style.left = "-9999px";
-        tempInput.value = text;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand("copy");
-        document.body.removeChild(tempInput);
-        alert("Copied to clipboard!");
-    }
-"""
 
 def translate():
     if "translate_state" not in st.session_state:
@@ -68,7 +51,7 @@ def translate():
 
     if "chat_history1" not in st.session_state:
         st.session_state.chat_history1 = []
-
+    
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vector_store()
 
@@ -84,7 +67,6 @@ def translate():
     translated_text = ""  # To store the translation
 
     if uploaded_file:
-        # Show the typewriter loader when translating
         if translate_button:
             st.markdown("""
                 <div class="typewriter">
@@ -106,28 +88,18 @@ def translate():
                 st.session_state.chat_history1.append(AIMessage(content=response))
                 translated_text = response  # Save the translation
 
-            # Hide the typewriter loader after translation
             st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
-    # Always show download button, active if translated text is available
     if translated_text:
-        # Create a PDF from the translated text using UTF-8 compatible font
-        pdf = PDF()
+        pdf = FPDF()
         pdf.add_page()
-
-        # Add a font that supports Arabic (or non-Latin) characters
-        pdf.add_font('DejaVu', '', 'DejaVuSans.ttf', uni=True)  # Update the path if necessary
-        pdf.set_font('DejaVu', '', 12)
-
-        # Use the translated text
+        pdf.set_font("Arial", size=12)
         pdf.multi_cell(0, 10, translated_text)
 
-        # Save the PDF to a BytesIO object
         pdf_output = BytesIO()
         pdf.output(pdf_output)
-        pdf_output.seek(0)  # Move to the beginning of the BytesIO object
+        pdf_output.seek(0)
 
-        # Display the download button in the sidebar
         st.sidebar.download_button(
             label="Download Translated Report",
             data=pdf_output,
@@ -135,22 +107,23 @@ def translate():
             mime="application/pdf"
         )
 
-        # Add copy-paste functionality using JavaScript and Font Awesome icon
-        st.markdown(f"""
-            <div style="margin-top: 10px;">
-                <button onclick="copyToClipboard('{translated_text}')">
-                    <i class="fa fa-copy"></i> Copy to Clipboard
-                </button>
+        st.markdown("""
+            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                <i class="fas fa-copy" style="font-size: 24px; cursor: pointer;" onclick="copyToClipboard()"></i>
             </div>
+            <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+            <script>
+                function copyToClipboard() {
+                    const el = document.createElement('textarea');
+                    el.value = `""" + translated_text.replace('\n', '\\n') + """`;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    alert('Text copied to clipboard');
+                }
+            </script>
         """, unsafe_allow_html=True)
-
-        # Inject the copy-to-clipboard JavaScript
-        st.markdown(f"<script>{copy_js}</script>", unsafe_allow_html=True)
-
-    # Check if the file is uploaded and translation has happened
-    elif uploaded_file and not translated_text:
-        st.sidebar.button("Download Translated Report")
-
 
 if __name__ == "__main__":
     translate()
