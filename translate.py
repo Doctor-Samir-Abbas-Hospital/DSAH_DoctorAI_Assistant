@@ -9,14 +9,14 @@ from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
 from io import BytesIO
-import arabic_reshaper  # To reshape Arabic text
-from bidi.algorithm import get_display  # To handle bidirectional text
+import arabic_reshaper
+from bidi.algorithm import get_display
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
-from reportlab.lib import colors  # Fix added: importing colors
+from reportlab.lib import colors
 from reportlab.lib.fonts import addMapping
 from reportlab.lib.utils import simpleSplit
 from utils.functions import (
@@ -56,51 +56,42 @@ def create_pdf(translated_text):
     # Set up page sizes and margins
     width, height = A4
     margin = inch
-    text_width = width - 2 * margin  # Calculate the usable text width
+    text_width = width - 2 * margin  # Calculate usable text width
     text_height = height - 2 * margin
 
     # Prepare text
     reshaped_text = reshape_arabic_text(clean_text(translated_text))
-    lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)  # Split by lines with proper width
+    lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)
 
     y = height - margin  # Start drawing text just below the margin
 
     # Set up text object
-    textobject = c.beginText()
-    textobject.setFont("Arial", 12)
-    textobject.setTextOrigin(width - margin, y)  # Right-align starting point
+    c.setFont("Arial", 12)
     
     # Add the title
     c.setFont('Arial', 18)
     title_text = "تقرير طبي شامل"
     bidi_title = reshape_arabic_text(title_text)
-    c.drawRightString(width - inch, y - inch, bidi_title)
+    c.drawRightString(width - margin, y, bidi_title)
 
     # Draw a horizontal line
     c.setLineWidth(0.5)
     c.setStrokeColor(colors.black)
-    c.line(margin, y - 1.5 * inch, width - margin, y - 1.5 * inch)
+    c.line(margin, y - 0.5 * inch, width - margin, y - 0.5 * inch)
     
-    y -= 2 * inch
+    y -= inch
 
-    # Draw text lines and handle pagination
+    # Right-align text for RTL Arabic
     for line in lines:
         if y < margin:  # If not enough space, move to the next page
-            c.drawText(textobject)
             c.showPage()
-            textobject = c.beginText()
-            textobject.setFont("Arial", 12)
-            textobject.setTextOrigin(width - margin, height - margin)
+            c.setFont("Arial", 12)
             y = height - margin
 
-        # Right-align text for RTL Arabic
-        textobject.setTextOrigin(width - margin, y)
-        textobject.textLine(line)
+        c.drawRightString(width - margin, y, line)
         y -= 14  # Move down for the next line
 
-    # Finalize the text object and save the PDF
-    c.drawText(textobject)
-    c.showPage()
+    # Finalize the PDF
     c.save()
 
     buffer.seek(0)
