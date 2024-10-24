@@ -9,11 +9,9 @@ from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
 from fpdf import FPDF
-from utils.functions import (
-    get_vector_store,
-    get_response_,
-)
 from io import BytesIO
+import arabic_reshaper  # To reshape Arabic text
+from bidi.algorithm import get_display  # To handle bidirectional text
 
 # Load environment variables
 load_dotenv()
@@ -102,14 +100,20 @@ def translate():
     if translated_text:
         pdf = PDF()
         pdf.add_page()
-        font_path = os.path.join('assets', 'DejaVuSans.ttf')
-        pdf.add_font("DejaVu", "", font_path, uni=True)
-        pdf.set_font("DejaVu", size=12)
-        pdf.multi_cell(0, 10, translated_text)
+        
+        # Path to a font that supports Arabic (replace with actual path to an Arabic font)
+        font_path = os.path.join('assets', 'Cairo-Regular.ttf')  
+        pdf.add_font("Cairo", "", font_path, uni=True)
+        pdf.set_font("Cairo", size=12)
+        
+        # Reshape and display Arabic text correctly
+        reshaped_text = arabic_reshaper.reshape(translated_text)
+        bidi_text = get_display(reshaped_text)  # Fix the bidi formatting for Arabic text
+
+        pdf.multi_cell(0, 10, bidi_text)
 
         pdf_output = BytesIO()
-        pdf.output(dest="S").encode("latin1")  # output the PDF to a string
-        pdf_output.write(pdf.output(dest="S").encode("latin1"))  # write to BytesIO buffer
+        pdf.output(pdf_output)
         pdf_output.seek(0)
 
         st.sidebar.download_button(
@@ -139,4 +143,3 @@ def translate():
 
 if __name__ == "__main__":
     translate()
-
