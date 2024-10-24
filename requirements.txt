@@ -15,7 +15,6 @@ streamlit_autorefresh
 PyPDF2
 streamlit_navigation_bar
 fpdf
-fpdf2
 flask
 flask-cors
 gunicorn
