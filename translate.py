@@ -116,7 +116,10 @@ def translate():
         pdf.multi_cell(0, 10, bidi_text)
 
         pdf_output = BytesIO()
-        pdf.output(pdf_output)
+        
+        # Output PDF to a BytesIO object
+        pdf_content = pdf.output(dest="S").encode("latin1")
+        pdf_output.write(pdf_content)
         pdf_output.seek(0)
 
         st.sidebar.download_button(
