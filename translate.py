@@ -7,14 +7,20 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
-from fpdf import FPDF  # Ensure you have fpdf installed
+from fpdf import FPDF
 from utils.functions import get_vector_store, get_response_
-from io import BytesIO  # For handling PDF output in memory
+from io import BytesIO
 
 # Load environment variables
 load_dotenv()
 
 client = OpenAI()
+
+# Custom FPDF class to support Unicode (UTF-8)
+class PDF(FPDF):
+    def header(self):
+        self.set_font('Arial', 'B', 12)
+        self.cell(0, 10, 'Translated Medical Report', 0, 1, 'C')
 
 # Function to add copy-paste functionality
 copy_js = """
@@ -105,10 +111,15 @@ def translate():
 
     # Always show download button, active if translated text is available
     if translated_text:
-        # Create a PDF from the translated text
-        pdf = FPDF()
+        # Create a PDF from the translated text using UTF-8 compatible font
+        pdf = PDF()
         pdf.add_page()
-        pdf.set_font("Arial", size=12)
+
+        # Add a font that supports Arabic (or non-Latin) characters
+        pdf.add_font('DejaVu', '', 'DejaVuSans.ttf', uni=True)
+        pdf.set_font('DejaVu', '', 12)
+
+        # Use the translated text
         pdf.multi_cell(0, 10, translated_text)
 
         # Save the PDF to a BytesIO object
@@ -124,7 +135,7 @@ def translate():
             mime="application/pdf"
         )
 
-        # Add copy-paste functionality using JavaScript
+        # Add copy-paste functionality using JavaScript and Font Awesome icon
         st.markdown(f"""
             <div style="margin-top: 10px;">
                 <button onclick="copyToClipboard('{translated_text}')">
@@ -140,10 +151,7 @@ def translate():
     elif uploaded_file and not translated_text:
         st.sidebar.button("Download Translated Report")
 
+
 if __name__ == "__main__":
     translate()
-
-
-
-
 
