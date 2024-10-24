@@ -13,7 +13,7 @@ st.set_page_config(
 pages = ["AI Doctor Assistant", "Medical Report Translator"]
 styles = {
     "nav": {
-        "position":"relative",
+        "position":"sticky",
         "display":"flex !important",
         "justify-content":"center",
         "align-items":"center",
