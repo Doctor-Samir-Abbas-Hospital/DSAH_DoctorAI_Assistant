@@ -97,7 +97,7 @@ def translate():
         pdf.multi_cell(0, 10, translated_text.encode('latin-1', 'replace').decode('latin-1'))
 
         pdf_output = BytesIO()
-        pdf.output(pdf_output)
+        pdf_output.write(pdf.output(dest='S').encode('latin-1'))
         pdf_output.seek(0)
 
         st.sidebar.download_button(
