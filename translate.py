@@ -1,17 +1,17 @@
 import os
 from dotenv import load_dotenv
 import streamlit as st
-from langchain_core.messages import AIMessage, HumanMessage
-from langchain_community.vectorstores.qdrant import Qdrant
-import qdrant_client
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
-from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
-from fpdf import FPDF
 from io import BytesIO
 import arabic_reshaper  # To reshape Arabic text
 from bidi.algorithm import get_display  # To handle bidirectional text
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.fonts import addMapping
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -20,139 +20,126 @@ from utils.functions import (
 # Load environment variables
 load_dotenv()
 
-client = OpenAI()
+# Register Arabic font (Arial)
+pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+addMapping('Arial', 0, 0, 'Arial')
 
-class PDF(FPDF):
-    def header(self):
-        pass
+def reshape_arabic_text(text):
+    """Reshapes and applies bidi formatting for Arabic text."""
+    reshaped_text = arabic_reshaper.reshape(text)
+    bidi_text = get_display(reshaped_text)
+    return bidi_text
 
-    def footer(self):
-        pass
+def create_pdf(translated_text):
+    """Creates a well-formatted PDF using ReportLab."""
+    
+    # Create a PDF canvas
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+
+    # Set document metadata
+    c.setTitle("Translated Medical Report")
+    c.setAuthor("Doctor AI Assistant")
+
+    # Set up page sizes and margins
+    width, height = A4
+    margin = inch
+    c.translate(margin, height - margin)
+
+    # Add a title
+    c.setFont('Arial', 18)
+    title_text = "تقرير طبي شامل"
+    bidi_title = reshape_arabic_text(title_text)
+    c.drawRightString(width - inch, -inch, bidi_title)
+
+    # Add a horizontal line
+    c.setLineWidth(0.5)
+    c.setStrokeColor(colors.black)
+    c.line(inch, -1.5 * inch, width - inch, -1.5 * inch)
+
+    # Add the body of the report
+    c.setFont('Arial', 12)
+    bidi_text = reshape_arabic_text(translated_text)
+    
+    # Draw the report text, starting from the right
+    lines = bidi_text.split('\n')
+    y = -2 * inch
+    for line in lines:
+        c.drawRightString(width - inch, y, line)
+        y -= 14  # Line spacing
+
+    # Add page number
+    c.setFont("Arial", 10)
+    c.drawRightString(width - inch, -11 * inch, "Page 1")
+
+    # Finish the PDF
+    c.showPage()
+    c.save()
+
+    buffer.seek(0)
+    return buffer
 
 def translate():
     # Initialize session state variables
     if "translate_state" not in st.session_state:
         st.session_state.translate_state = {}
 
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []  # Initialize chat_history
+    if "chat_history1" not in st.session_state:
+        st.session_state.chat_history1 = []  # Initialize chat_history
     
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vector_store()
 
+    # Upload file section in Streamlit
     with open('style.css') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
     with st.sidebar:
-        title = "Doctor AI Assistant"
-        name = "Medical Diagnosis and More..."
-        profession = "Doctor Samir Abbas Hospital"
-        imgUrl = "https://media3.giphy.com/media/6P47BlxlgrJxQ9GR58/giphy.gif"
-        
-        st.markdown(
-            f"""
-                <img class="profileImage" src="{imgUrl}" alt="Your Photo">
-                <div class="textContainer">
-                    <div class="title"><p>{title}</p></div>
-                    <p>{name}</p>
-                    <p>{profession}</p>
-                    <p>Powered by DSAH Information Technology</p>
-                </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        
+        st.title("Doctor AI Assistant")
+        st.subheader("Upload a PDF medical report for translation")
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
 
-        # Show the translate button only if a file is uploaded
-        if uploaded_file:
-            translate_button = st.button("Translate The Medical Report")
+    # Process uploaded PDF file and translate
+    if uploaded_file:
+        translate_button = st.button("Translate The Medical Report")
+        if translate_button:
+            st.markdown("""
+                <div class="typewriter">
+                    <div class="slide"><i></i></div>
+                    <div class="paper"></div>
+                    <div class="keyboard"></div>
+                </div>
+            """, unsafe_allow_html=True)
 
-    for message in st.session_state.chat_history:
-        if isinstance(message, AIMessage):
-            with st.chat_message("AI", avatar="🤖"):
-                st.write(message.content)
-        elif isinstance(message, HumanMessage):
-            with st.chat_message("Human", avatar="👨‍⚕️"):
-                st.write(message.content)
+            with st.spinner("Reading and translating PDF..."):
+                # Read the PDF
+                reader = PdfReader(uploaded_file)
+                pdf_text = ""
+                for page in reader.pages:
+                    pdf_text += page.extract_text()
 
-    pdf_text = ""
-    translated_text = ""
+                # Simulate translation (this would be your translation logic)
+                translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic."
+                response = get_response_(translation_prompt + " " + pdf_text)
+                translated_text = response
 
-    if uploaded_file and translate_button:
-        st.markdown("""
-            <div class="typewriter">
-                <div class="slide"><i></i></div>
-                <div class="paper"></div>
-                <div class="keyboard"></div>
-            </div>
-        """, unsafe_allow_html=True)
+                # Generate PDF
+                st.session_state.translated_pdf = create_pdf(translated_text)
 
-        with st.spinner("Reading PDF..."):
-            reader = PdfReader(uploaded_file)
-            for page in reader.pages:
-                pdf_text += page.extract_text()
+                st.success("Translation completed!")
 
-        translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
-        with st.chat_message("AI", avatar="🤖"):
-            response = get_response_(translation_prompt + " " + pdf_text)
-            st.write(response)
-            st.session_state.chat_history.append(AIMessage(content=response))
-            translated_text = response
+            st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
-        st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
-
-    if translated_text:
-        pdf = PDF()
-        pdf.add_page()
-        
-        # Path to Arial font (system default if installed, or local path if using local file)
-        font_path = os.path.join('assets', 'Arial.ttf')  # Change this to the actual path if you need to use a local version.
-        
-        # Add the font (you can skip the path if Arial is installed on the system)
-        pdf.add_font("Arial", "", font_path, uni=True)
-        pdf.set_font("Arial", size=14)
-        
-        # Reshape and display Arabic text correctly
-        reshaped_text = arabic_reshaper.reshape(translated_text)
-        bidi_text = get_display(reshaped_text)  # Fix the bidi formatting for Arabic text
-
-        # Output properly formatted Arabic text in the PDF
-        pdf.set_right_margin(10)  # Add right margin for better alignment
-        pdf.multi_cell(0, 10, bidi_text, align='R')  # Align to the right
-
-        pdf_output = BytesIO()
-        
-        # Output PDF to a BytesIO object
-        pdf_content = pdf.output(dest="S").encode("latin1")
-        pdf_output.write(pdf_content)
-        pdf_output.seek(0)
-
+    # Display PDF download button after translation
+    if "translated_pdf" in st.session_state:
         st.sidebar.download_button(
             label="Download Translated Report",
-            data=pdf_output,
+            data=st.session_state.translated_pdf,
             file_name="translated_report.pdf",
             mime="application/pdf"
         )
 
-        st.markdown("""
-            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                <i class="fas fa-copy" style="font-size: 24px; cursor: pointer;" onclick="copyToClipboard()"></i>
-            </div>
-            <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-            <script>
-                function copyToClipboard() {
-                    const el = document.createElement('textarea');
-                    el.value = `""" + translated_text.replace('\n', '\\n') + """`;
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                    alert('Text copied to clipboard');
-                }
-            </script>
-        """, unsafe_allow_html=True)
-
 if __name__ == "__main__":
     translate()
+
 
