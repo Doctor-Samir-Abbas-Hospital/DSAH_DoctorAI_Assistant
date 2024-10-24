@@ -108,7 +108,8 @@ def translate():
         pdf.multi_cell(0, 10, translated_text)
 
         pdf_output = BytesIO()
-        pdf.output(pdf_output)  # Remove the 'F' mode
+        pdf.output(dest="S").encode("latin1")  # output the PDF to a string
+        pdf_output.write(pdf.output(dest="S").encode("latin1"))  # write to BytesIO buffer
         pdf_output.seek(0)
 
         st.sidebar.download_button(
@@ -138,3 +139,4 @@ def translate():
 
 if __name__ == "__main__":
     translate()
+
