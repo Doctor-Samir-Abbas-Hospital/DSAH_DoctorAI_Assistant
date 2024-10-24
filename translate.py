@@ -3,22 +3,33 @@ from dotenv import load_dotenv
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_community.vectorstores.qdrant import Qdrant
-import qdrant_client
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
 from fpdf import FPDF  # Ensure you have fpdf installed
-from utils.functions import (
-    get_vector_store,
-    get_response_,
-)
+from utils.functions import get_vector_store, get_response_
 from io import BytesIO  # For handling PDF output in memory
 
 # Load environment variables
 load_dotenv()
 
 client = OpenAI()
+
+# Function to add copy-paste functionality
+copy_js = """
+    function copyToClipboard(text) {
+        var tempInput = document.createElement("textarea");
+        tempInput.style.position = "absolute";
+        tempInput.style.left = "-9999px";
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        alert("Copied to clipboard!");
+    }
+"""
 
 def translate():
     if "translate_state" not in st.session_state:
@@ -51,7 +62,7 @@ def translate():
 
     if "chat_history1" not in st.session_state:
         st.session_state.chat_history1 = []
-    
+
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vector_store()
 
@@ -113,24 +124,25 @@ def translate():
             mime="application/pdf"
         )
 
+        # Add copy-paste functionality using JavaScript
+        st.markdown(f"""
+            <div style="margin-top: 10px;">
+                <button onclick="copyToClipboard('{translated_text}')">
+                    <i class="fa fa-copy"></i> Copy to Clipboard
+                </button>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # Inject the copy-to-clipboard JavaScript
+        st.markdown(f"<script>{copy_js}</script>", unsafe_allow_html=True)
+
     # Check if the file is uploaded and translation has happened
     elif uploaded_file and not translated_text:
-        st.sidebar.button("Download Translated Report", disabled=True)
-
-    user_query = st.chat_input("Type your message here...", key="translate_chat_input")
-    if user_query and user_query.strip():
-        st.session_state.chat_history1.append(HumanMessage(content=user_query))
-        
-        with st.chat_message("Human", avatar="👨‍⚕️"):
-            st.markdown(user_query)
-        
-        with st.chat_message("AI", avatar="🤖"):
-            response = get_response_(user_query)
-            st.write(response)
-            st.session_state.chat_history1.append(AIMessage(content=response))
+        st.sidebar.button("Download Translated Report")
 
 if __name__ == "__main__":
     translate()
+
 
 
 

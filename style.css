@@ -1,10 +1,19 @@
 /*Body*/
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+
 [data-testid="stAppViewContainer"] {
   /*background-image:url("https://i.ibb.co/0GTS96m/theme3.jpg");
     background-size: cover;*/
   background: linear-gradient(to right, rgb(182, 244, 146), rgb(73, 187, 216));
 }
-
+[data-testid="baseButton-header"]{
+  background-color: #fff;
+  color: red;
+}
+[data-testid="baseButton-headerNoPadding"]{
+  background-color: red;
+  font-size: 0.5rem;
+}
 /*header*/
 /*
 div.ezrtsby2{
