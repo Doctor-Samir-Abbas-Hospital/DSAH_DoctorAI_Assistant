@@ -13,17 +13,18 @@ st.set_page_config(
 pages = ["AI Doctor Assistant", "Medical Report Translator"]
 styles = {
     "nav": {
-        "position":"sticky",
-        "display":"flex !important",
-        "justify-content":"center",
-        "align-items":"center",
-        "flex-direction":"row",
-        "z-index":"0",
+        "position": "sticky",
+        "display": "flex !important",
+        "justify-content": "center",
+        "align-items": "center",
+        "flex-direction": "row",
+        "z-index": "0",
         "background-color": "#990033",
-        "color":"white",
-        "fontsize":"0.5rem",
-        "gap":"1",
-
+        "color": "white",
+        "fontsize": "0.5rem",
+        "gap": "1rem",
+        "padding": "0rem",
+        "transition": "all 0.3s ease-in-out",
     },
     "div": {
         "max-width": "32rem",
@@ -32,7 +33,10 @@ styles = {
         "border-radius": "0.5rem",
         "color": "white",
         "padding": "0.4375rem 0.625rem",
-        "fontsize":"0.5rem"
+        "fontsize": "0.5rem",
+        "transition": "background-color 0.3s ease-in-out, color 0.3s ease-in-out",
+        "border": "2px solid",
+        "border-image": "linear-gradient(to right, rgb(182, 244, 146), rgb(73, 187, 216)) 1",
     },
     "active": {
         "color": "black",
@@ -50,4 +54,4 @@ page = st_navbar(pages, styles=styles)
 if page == "AI Doctor Assistant":
     app.app()  # Call the app function from app.py
 else:
-    translate.translate()  # Call the translate function from translate.py
+    translate.translate()  # Call the translate function from translate.py # Call the translate function from translate.py

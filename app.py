@@ -1,27 +1,82 @@
 import os
+import pyaudio
+import wave
+import base64
 from dotenv import load_dotenv
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 import openai
-from audio_recorder_streamlit import audio_recorder
 from streamlit_float import *
 from templates.watch import clock
+import streamlit.components.v1 as components
 from streamlit_extras.stylable_container import stylable_container
 from utils.functions import (
+    speech_to_text,
     get_vector_store,
-    get_context_retriever_chain,
-    get_conversational_rag_chain,
     get_response,
     text_to_audio,
-    autoplay_audio,
-    speech_to_text,
 )
 
-# load the variables
-load_dotenv()
-client = openai
+# PyAudio configuration
+FORMAT = pyaudio.paInt16
+CHANNELS = 2
+RATE = 44100
+CHUNK = 1024
+WAVE_OUTPUT_FILENAME = "output.wav"
 
-# app layout
+# Initialize PyAudio
+audio = pyaudio.PyAudio()
+
+# Global stream and frames for recording
+stream = None
+frames = []
+
+# Initialize OpenAI Client
+load_dotenv()
+openai_api_key = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key=openai_api_key)
+
+# Start recording function
+def start_recording():
+    global stream, frames
+    frames = []  # Reset frames list
+    stream = audio.open(
+        format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK
+    )
+    print("Recording started...")
+
+
+# Stop recording and save audio as base64
+def stop_recording():
+    global stream, frames
+    if stream:
+        stream.stop_stream()
+        stream.close()
+        print("Recording stopped.")
+
+        # Save the recorded audio as a WAV file
+        with wave.open(WAVE_OUTPUT_FILENAME, "wb") as wf:
+            wf.setnchannels(CHANNELS)
+            wf.setsampwidth(audio.get_sample_size(FORMAT))
+            wf.setframerate(RATE)
+            wf.writeframes(b"".join(frames))
+
+        # Read the file and convert it to base64
+        with open(WAVE_OUTPUT_FILENAME, "rb") as audio_file:
+            audio_base64 = base64.b64encode(audio_file.read()).decode("utf-8")
+
+        return audio_base64
+
+
+# Stream audio data continuously while recording
+def stream_audio_data():
+    global stream, frames
+    if stream:
+        data = stream.read(CHUNK)
+        frames.append(data)
+
+
+# Main app function
 def app():
     # Read CSS file
     with open("style.css") as f:
@@ -44,7 +99,7 @@ def app():
             """,
             unsafe_allow_html=True,
         )
-        
+
         # Embed the clock here
         st.components.v1.html(
             clock,
@@ -74,20 +129,64 @@ def app():
             """
         ],
     )
+
     user_query = None
-    user_input = st.chat_input("Type your message here...", key="app_chat_input")  # Unique key
-    with footer_container:
-        transcript = None
-        audio_bytes = audio_recorder(text=None, icon_size="15X", key="recorder")
-        if audio_bytes:
-            # Write the audio bytes to a file
-            with st.spinner("Transcribing..."):
-                webm_file_path = "temp_audio.mp3"
-                with open(webm_file_path, "wb") as f:
-                    f.write(audio_bytes)
-                transcript = speech_to_text(webm_file_path)
-                os.remove(webm_file_path)
-                user_query = transcript
+    user_input = st.chat_input(
+        "Type your message here...", key="app_chat_input"
+    )  # Unique key
+
+    # JavaScript code for controlling the toggle between mic and send button
+    components.html(
+        """
+        <script>
+        const chatInput = document.querySelector('[data-testid="stChatInputTextArea"]');
+        const sendButton = document.querySelector('[data-testid="stChatInputSubmitButton"]');
+        const micButton = document.createElement('button');
+        micButton.classList.add('mic-btn');
+        micButton.innerHTML = '<i class="fas fa-microphone"></i>';
+        sendButton.parentElement.insertBefore(micButton, sendButton);
+        let isRecording = false;
+        function toggleButtons() {
+            if (chatInput.value.trim().length > 0) {
+                micButton.style.display = 'none';
+                sendButton.style.display = 'block';
+            } else {
+                micButton.style.display = 'block';
+                sendButton.style.display = 'none';
+            }
+        }
+        chatInput.addEventListener('input', toggleButtons);
+        micButton.addEventListener('click', () => {
+            if (!isRecording) {
+                isRecording = true;
+                micButton.innerHTML = '<i class="fas fa-stop"></i>';
+                window.parent.postMessage({ type: 'start_recording' }, '*');
+            } else {
+                isRecording = false;
+                micButton.innerHTML = '<i class="fas fa-microphone"></i>';
+                window.parent.postMessage({ type: 'stop_recording' }, '*');
+            }
+        });
+        toggleButtons();
+        </script>
+        """,
+        height=0,
+    )
+
+    # Check if we received a start/stop recording event from the frontend
+    msg = st.query_params.get(
+        "msg", None
+    )  # Use st.query_params instead of experimental
+    if msg:
+        if msg == "start_recording":
+            start_recording()
+        elif msg == "stop_recording":
+            audio_base64 = stop_recording()
+            if audio_base64:
+                # Process the base64 audio here, convert to text and send to your model
+                with st.spinner("Transcribing..."):
+                    transcript = speech_to_text(audio_base64)
+                    user_query = transcript
 
     if user_input is not None and user_input != "":
         user_query = user_input
@@ -125,3 +224,6 @@ def app():
 
 if __name__ == "__main__":
     app()
+
+# Close PyAudio when app ends
+audio.terminate()
