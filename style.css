@@ -23,6 +23,7 @@
 [data-testid="stChatInputSubmitButton"]{
   border: none !important;
 }
+
 /*header*/
 /*
 div.ezrtsby2{
@@ -664,3 +665,4 @@ button:hover {
       font-size: 16px;
   }
 }
+

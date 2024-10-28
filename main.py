@@ -54,4 +54,4 @@ page = st_navbar(pages, styles=styles)
 if page == "AI Doctor Assistant":
     app.app()  # Call the app function from app.py
 else:
-    translate.translate()  # Call the translate function from translate.py # Call the translate function from translate.py
+    translate.translate()  # Call Call the translate function from translate.py # Call the translate function from translate.py
