@@ -13,39 +13,46 @@ st.set_page_config(
 pages = ["AI Doctor Assistant", "Medical Report Translator"]
 styles = {
     "nav": {
-        "position": "sticky",
-        "display": "flex !important",
+        "background-color": "#990033",
         "justify-content": "center",
         "align-items": "center",
         "flex-direction": "row",
-        "z-index": "0",
-        "background-color": "#990033",
         "color": "white",
         "fontsize": "0.5rem",
-        "gap": "1rem",
-        "padding": "0rem",
+        "gap": "0.5rem",
         "transition": "all 0.3s ease-in-out",
     },
-    "div": {
-        "max-width": "32rem",
+    "img": {
+        "padding-right": "14px",
     },
     "span": {
-        "border-radius": "0.5rem",
         "color": "white",
-        "padding": "0.4375rem 0.625rem",
-        "fontsize": "0.5rem",
-        "transition": "background-color 0.3s ease-in-out, color 0.3s ease-in-out",
+        "padding": "14px 40px",  # Adjusted padding for button-like appearance
+        "font-size": "16px",
+        "line-height": "1.5",
+        "font-weight": "600",
         "border": "2px solid",
         "border-image": "linear-gradient(to right, rgb(182, 244, 146), rgb(73, 187, 216)) 1",
+        "background": "rgba(153, 0, 51, 0.95)",  # Match navbar background with slight transparency
+        "backdrop-filter": "blur(7px)",
+        "position": "relative",
+        
     },
     "active": {
+        "background": "rgba(255, 255, 255, 0.5)",
+        "backdrop-filter": "blur(10px)",
         "color": "black",
-        "background-color": "white",
+        "font-weight": "bold",
+        "padding": "14px",
     },
     "hover": {
-        "background-color": "rgba(255, 255, 255, 0.35)",
+        "background-color": "rgba(255, 255, 255, 0.3)",  # Hover effect
+        "transform": "scale(1.5)",  # Scaling effect on hover
+        "transition": "all 200ms ease-out",
     },
 }
+
+
 
 # Pass the list and styles directly
 page = st_navbar(pages, styles=styles)

@@ -18,7 +18,6 @@ from my_component import chat_input_widget
 load_dotenv()
 client = OpenAI()
 
-
 def app():
     # Load and apply custom CSS
     with open("style.css") as f:
@@ -49,7 +48,7 @@ def app():
             height=400,
             width=300,
         )
-
+    
     # Initialize session states
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = [
@@ -75,9 +74,9 @@ def app():
     with footer_container:
         response = chat_input_widget()
     footer_container.float(
-        "display:flex; align-items:center;justify-content:center; overflow:hidden visible;align-self:self-end;flex-direction: row-reverse; position:fixed;bottom:0;z-index: 1000;"
+        "display:flex; align-items:center;justify-content:center; overflow:hidden visible;flex-direction:column; position:fixed;bottom:15px;"
     )
-
+    
     user_query = None
 
     if response:
@@ -97,16 +96,16 @@ def app():
         st.session_state.chat_history.append(HumanMessage(content=user_query))
         with st.chat_message("Human", avatar="👩‍⚕️"):
             st.markdown(user_query)
-
-        # Get AI response
+       # Get AI response
         with st.chat_message("AI", avatar="🤖"):
             response = st.write_stream(get_response(user_query))
-            response_audio_file = "audio_response.mp3"
-            text_to_audio(client, response, response_audio_file)
-            st.audio(response_audio_file)
-            os.remove(response_audio_file)
+            #response_audio_file = "audio_response.mp3"
+            #text_to_audio(client, response, response_audio_file)
+            #st.audio(response_audio_file)
+            #os.remove(response_audio_file)
             st.session_state.chat_history.append(AIMessage(content=response))
 
 
 if __name__ == "__main__":
     app()
+

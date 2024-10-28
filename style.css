@@ -43,6 +43,7 @@ div.ezrtsby2{
   position: absolute;
   margin-bottom: 40px;
   background-color: #990033;
+  width: 400px;
   background-image: linear-gradient(to right, #990033, rgb(46, 1, 1));
 }
 
@@ -528,141 +529,7 @@ button:hover {
   color: #ffffff !important;
   border-radius: 5px;
 }
-/* Target the textarea by its data-baseweb attribute */
-[data-baseweb="textarea"] {
-  border: none !important;      /* Removes any border */
-  outline: none !important;     /* Removes any outline */
-  box-shadow: none !important;  /* Removes any box shadow */
-}
-
-/* Also target the focus state in case it's adding a red border on focus */
-[data-baseweb="textarea"]:focus {
-  border: none !important;      /* Removes any border on focus */
-  outline: none !important;     /* Removes any outline on focus */
-  box-shadow: none !important;  /* Removes any shadow on focus */
-}
-
- /* Style the chat container (based on class you provided) */
- .stChatInput {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-  border: none;
-  background: rgba(255, 255, 255, 0.1); /* Slight transparency for glass effect */
-  backdrop-filter: blur(6px); /* Apply blur for glassmorphic effect */
-  border-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Style the chat input field */
-[data-testid="stChatInputTextArea"] {
-  border: none !important; /* Removes the default border */
-  outline: none !important; /* Removes the outline (focus highlight) */
-  flex-grow: 1;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.2); /* Transparent background for input */
-  color: black;
-  border-radius: 20px;
-  font-size: 16px;
-  box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.1); /* Inner shadow for depth */
-}
-
-/* Chat input placeholder */
-[data-testid="stChatInputTextArea"]::placeholder {
-  color: rgba(0, 0, 0, 0.7); /* Semi-transparent placeholder */
-}
-
-/* Style the mic button */
-.mic-btn {
-  background: linear-gradient(145deg, #00B0F0, #00D4FF); /* Gradient for mic button */
-  border: none;
-  border-radius: 50%;
-  color: white;
-  width: 45px;
-  height: 45px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  font-size: 20px;
-  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
-  margin-right: 15px; /* Add margin between mic and send button */
-}
-
-/* Mic button hover effect */
-.mic-btn:hover {
-  background: linear-gradient(145deg, #ff66b2, #ff1a75); /* Gradient hover effect */
-  box-shadow: 0 8px 20px rgba(255, 102, 178, 0.4); /* Glowing effect on hover */
-}
-
-/* Mic button active effect */
-.mic-btn:active {
-  transform: scale(1.1);
-}
-
-/* Style the send button (which is native to Streamlit) */
-[data-testid="stChatInputSubmitButton"] {
-  background: linear-gradient(145deg, #00B0F0, #00D4FF); /* Gradient to match the mic button */
-  border: none;
-  border-radius: 50%;
-  color: white;
-  width: 45px;
-  height: 45px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  font-size: 20px;
-  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
-  margin-right: 15px;  /* Add margin to the right side for spacing */
-  padding: 5px;  /* Add padding around the button to give it more space */
-  position: relative;  /* Ensure the button remains aligned within the container */
-}
 
 
-/* Send button hover effect */
-[data-testid="stChatInputSubmitButton"]:hover {
-  background: linear-gradient(145deg, #ff66b2, #ff1a75); /* Hover gradient for send button */
-  box-shadow: 0 8px 20px rgba(255, 102, 178, 0.4); /* Hover glow */
-  border-radius: 50%;
-}
 
-/* Send button active effect */
-[data-testid="stChatInputSubmitButton"]:active {
-  transform: scale(1.1);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .stChatInput {
-      padding: 8px;
-  }
-
-  [data-testid="stChatInputTextArea"] {
-      font-size: 14px;
-  }
-
-  .mic-btn, [data-testid="stChatInputSubmitButton"] {
-      width: 45px;
-      height: 45px;
-      font-size: 18px;
-  }
-}
-
-@media (max-width: 480px) {
-  .stChatInput {
-      padding: 5px;
-  }
-
-  [data-testid="stChatInputTextArea"] {
-      font-size: 12px;
-  }
-
-  .mic-btn, [data-testid="stChatInputSubmitButton"] {
-      width: 40px;
-      height: 40px;
-      font-size: 16px;
-  }
-}
 
