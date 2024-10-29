@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # Create the navigation bar with styles
-pages = ["AI Doctor Assistant", "Medical Report Translator"]
+pages = ["Doctor AI Assistant", "Medical Report Translator"]
 styles = {
     "nav": {
         "background-color": "#990033",
@@ -56,7 +56,7 @@ styles = {
 page = st_navbar(pages, styles=styles)
 
 # Conditional rendering based on the selected page
-if page == "AI Doctor Assistant":
+if page == "Doctor AI Assistant":
     app.app()  # Call the app function from app.py
 else:
     translate.translate()  # Call Call the translate function from translate.py # Call the translate function from translate.py
