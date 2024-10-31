@@ -23,6 +23,24 @@
 [data-testid="stChatInputSubmitButton"]{
   border: none !important;
 }
+::-webkit-scrollbar {
+  width: 20px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: linear-gradient(to right, rgb(182, 244, 146), rgb(73, 187, 216)) !important;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+  background: #af023b !important;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+  background: white !important;
+  }
 
 /*header*/
 /*
@@ -115,7 +133,6 @@ div.st-emotion-cache-1c7y2kd.eeusbqq4 {
   background: #d9fdd3;
   border-radius: 10px 3px 10px 10px;
   padding: 10px;
-  margin-bottom: 0%;
   flex-direction: row-reverse;
 }
 
@@ -529,6 +546,8 @@ button:hover {
   color: #ffffff !important;
   border-radius: 5px;
 }
+
+
 
 
 
