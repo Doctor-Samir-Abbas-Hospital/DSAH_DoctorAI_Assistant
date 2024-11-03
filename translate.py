@@ -19,6 +19,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib import colors
 from reportlab.lib.fonts import addMapping
 from reportlab.lib.utils import simpleSplit
+import pyperclip  # Add pyperclip for copy functionality
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -168,23 +169,13 @@ def translate():
             mime="application/pdf"
         )
 
-        st.markdown("""
-            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                <i class="fas fa-copy" style="font-size: 24px; cursor: pointer;" onclick="copyToClipboard()"></i>
-            </div>
-            <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-            <script>
-                function copyToClipboard() {
-                    const el = document.createElement('textarea');
-                    el.value = `""" + translated_text.replace('\n', '\\n') + """`;
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                    alert('Text copied to clipboard');
-                }
-            </script>
-        """, unsafe_allow_html=True)
+        # Display the translated text and a copy button below it
+        st.write(translated_text)
+        
+        # Add a 'Copy' button below the translated text
+        if st.button('Copy Translated Text'):
+            pyperclip.copy(translated_text)
+            st.success('Translated text copied to clipboard successfully!')
 
 if __name__ == "__main__":
     translate()

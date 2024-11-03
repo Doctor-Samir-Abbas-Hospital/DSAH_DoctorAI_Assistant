@@ -19,5 +19,6 @@ fpdf
 reportlab
 arabic_reshaper 
 python-bidi
+pyperclip 
 gunicorn
 
