@@ -168,12 +168,12 @@ def translate():
             mime="application/pdf"
         )
 
-        # Use st.components.v1.html for copy functionality with Font Awesome
+        # Use st.components.v1.html for copy functionality
         st.components.v1.html(f"""
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOMTnlA4E6Zr9/6b0GqAdVIl0QvZb0e6a3ANV3L5" crossorigin="anonymous">
-            
             <div>
-                <i class="fas fa-copy copy-icon" role="button" style="font-size: 22px; cursor: pointer;"></i>
+                <span class="copy-icon" role="button">==
+                    <span class="link-icon"></span>
+                </span>
                 <span class="toastbox" role="alert"></span>
             </div>
 
@@ -182,8 +182,86 @@ def translate():
             </div>
 
             <style>
+            body {{
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100vh;
+            }}
+
+            .copy-icon {{
+              cursor: pointer;
+              position: relative;
+              border: 5px solid black;
+              width: 25px;
+              height: 40px;
+              font-size: 45px;
+              line-height: 34px;
+              word-break: break-word;
+              text-align: center;
+              padding: 10px 1px 0;
+              user-select: none;
+            }}
+
+            .copy-icon::after,
+            .copy-icon::before {{
+              content: '';
+              position: absolute;
+              border: solid black;
+              transform: translateX(-50%);
+              left: 50%;
+            }}
+            .copy-icon::after {{
+              border-width: 6px;
+              border-top-left-radius: 6px;
+              border-top-right-radius: 6px;
+              width: 20px;
+              top: -8px;
+            }}
+            .copy-icon::before {{
+              border-width: 6px;
+              bottom: 103%;
+              border-radius: 50%;
+              background-color: black;     
+            }}
+
+            .link-icon {{
+              position: absolute;
+              bottom: -13px;
+              right: -20px;
+              border: 4px solid black;
+              width: 45px;
+              height: 17px;
+              border-radius: 40px;
+              background: white;
+              box-shadow: 0px 0px 0px 5px #fff;
+            }}
+
+            .link-icon::after,
+            .link-icon::before {{
+              content: '';
+              position: absolute;
+              border-style: solid;
+              width: 20px;
+            }}
+
+            .link-icon::after {{
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              border-width: 2px;
+            }}
+
+            .link-icon::before {{
+              transform: rotate(-90deg);
+              left: 9px;
+              top: 5px;
+              border-color: white;
+              border-width: 4px;
+            }}
+
             .toastbox {{
-              width: 280px;
+              width: 100px;
               padding: 10px;
               background-color: rgba(0,0,0,.7);
               color: white;
