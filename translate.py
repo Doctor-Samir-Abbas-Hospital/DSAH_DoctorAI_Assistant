@@ -192,7 +192,7 @@ def translate():
             .copy-icon {{
               cursor: pointer;
               position: relative;
-              border: 5px solid black;
+              border: 5px solid white;
               width: 25px;
               height: 40px;
               font-size: 45px;
