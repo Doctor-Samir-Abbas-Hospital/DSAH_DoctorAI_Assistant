@@ -19,7 +19,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib import colors
 from reportlab.lib.fonts import addMapping
 from reportlab.lib.utils import simpleSplit
-import pyperclip  # Add pyperclip for copy functionality
+import pyperclip  # Ensure pyperclip is imported
 from utils.functions import (
     get_vector_store,
     get_response_,
@@ -169,9 +169,6 @@ def translate():
             mime="application/pdf"
         )
 
-        # Display the translated text and a copy button below it
-        st.write(translated_text)
-        
         # Add a 'Copy' button below the translated text
         if st.button('Copy Translated Text'):
             pyperclip.copy(translated_text)
