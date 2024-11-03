@@ -169,7 +169,7 @@ def translate():
         )
 
         # Use st.components.v1.html for copy functionality
-        st.components.v1.html(f"""
+        st.sidebar.components.v1.html(f"""
             <div>
                 <span class="copy-icon" role="button">==
                     <span class="link-icon"></span>
@@ -341,7 +341,7 @@ def translate():
 
             copyToClipboard.handleCopyIconClick();
             </script>
-        """, height=300)
+        """, height=250)
 
 if __name__ == "__main__":
     translate()
