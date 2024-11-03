@@ -160,13 +160,6 @@ def translate():
 
     if translated_text:
         pdf_buffer = create_pdf(translated_text)
-        
-        # Display the translated text in a hidden div
-        st.markdown(f"""
-            <div id="translated-text" style="display:none;">
-                {translated_text}
-            </div>
-        """, unsafe_allow_html=True)
 
         st.sidebar.download_button(
             label="Download Translated Report",
@@ -175,24 +168,28 @@ def translate():
             mime="application/pdf"
         )
 
-        # Add copy button and toast notification
-        st.markdown("""
-            <span class="copy-icon" role="button">==
-              <span class="link-icon"></span>
-            </span>
+        # Use st.components.v1.html for copy functionality
+        st.components.v1.html(f"""
+            <div>
+                <span class="copy-icon" role="button">==
+                    <span class="link-icon"></span>
+                </span>
+                <span class="toastbox" role="alert"></span>
+            </div>
 
-            <span class="toastbox" role="alert"></span>
+            <div id="translated-text" style="display:none;">
+                {translated_text}
+            </div>
 
             <style>
-            /* Add your CSS here */
-            body {
+            body {{
               display: flex;
               align-items: center;
               justify-content: center;
               height: 100vh;
-            }
+            }}
 
-            .copy-icon {
+            .copy-icon {{
               cursor: pointer;
               position: relative;
               border: 5px solid black;
@@ -204,31 +201,31 @@ def translate():
               text-align: center;
               padding: 10px 1px 0;
               user-select: none;
-            }
+            }}
 
             .copy-icon::after,
-            .copy-icon::before {
+            .copy-icon::before {{
               content: '';
               position: absolute;
               border: solid black;
               transform: translateX(-50%);
               left: 50%;
-            }
-            .copy-icon::after {
+            }}
+            .copy-icon::after {{
               border-width: 6px;
               border-top-left-radius: 6px;
               border-top-right-radius: 6px;
               width: 20px;
               top: -8px;
-            }
-            .copy-icon::before {
+            }}
+            .copy-icon::before {{
               border-width: 6px;
               bottom: 103%;
               border-radius: 50%;
               background-color: black;     
-            }
+            }}
 
-            .link-icon {
+            .link-icon {{
               position: absolute;
               bottom: -13px;
               right: -20px;
@@ -238,32 +235,32 @@ def translate():
               border-radius: 40px;
               background: white;
               box-shadow: 0px 0px 0px 5px #fff;
-            }
+            }}
 
             .link-icon::after,
-            .link-icon::before {
+            .link-icon::before {{
               content: '';
               position: absolute;
               border-style: solid;
               width: 20px;
-            }
+            }}
 
-            .link-icon::after {
+            .link-icon::after {{
               top: 50%;
               left: 50%;
               transform: translate(-50%, -50%);
               border-width: 2px;
-            }
+            }}
 
-            .link-icon::before {
+            .link-icon::before {{
               transform: rotate(-90deg);
               left: 9px;
               top: 5px;
               border-color: white;
               border-width: 4px;
-            }
+            }}
 
-            .toastbox {
+            .toastbox {{
               width: 280px;
               padding: 10px;
               background-color: rgba(0,0,0,.7);
@@ -273,22 +270,22 @@ def translate():
               position: fixed;
               top: 105%;
               transition: transform .3s linear;
-            }
+            }}
 
-            .toastbox.toast-tox--active {
+            .toastbox.toast-tox--active {{
               transform: translateY(-150px); 
-            }
+            }}
             </style>
 
             <script>
-            var copyToClipboard = (function () { 
+            var copyToClipboard = (function () {{ 
               var copyIcon = document.querySelector(".copy-icon");
               var toastBox = document.querySelector(".toastbox");
               var translatedText = document.getElementById("translated-text").textContent;
 
-              function isCopying(string) { 
+              function isCopying(string) {{ 
                 var textarea, result;
-                try {
+                try {{
                   textarea = document.createElement('textarea');
                   textarea.setAttribute('readonly', true);
                   textarea.setAttribute('contenteditable', true);
@@ -308,43 +305,43 @@ def translate():
 
                   textarea.setSelectionRange(0, textarea.value.length);
                   result = document.execCommand('copy');
-                } catch (err) {
+                }} catch (err) {{
                   console.error(err);
                   result = null;
-                } finally {
+                }} finally {{
                   document.body.removeChild(textarea);
-                }
-                if (!result) {
+                }}
+                if (!result) {{
                   result = prompt("Copy the text", string); 
-                  if (!result) {
+                  if (!result) {{
                     return false;
-                  }
-                }
+                  }}
+                }}
                 return true;
-              }
+              }}
 
-              function showToastBox(message) {
+              function showToastBox(message) {{
                 toastBox.textContent = message;
-                setTimeout(function () {
+                setTimeout(function () {{
                   toastBox.classList.add("toast-tox--active");
-                }, 500);
-                setTimeout(function () {
+                }}, 500);
+                setTimeout(function () {{
                   toastBox.classList.remove("toast-tox--active");
-                }, 3000);
-              }
+                }}, 3000);
+              }}
 
-              function handleCopyIconClick() {
-                copyIcon.addEventListener("click", function(){
+              function handleCopyIconClick() {{
+                copyIcon.addEventListener("click", function(){{
                   showToastBox(isCopying(translatedText) ? "Text copied successfully" : "Unable to copy");
-                });
-              }
+                }});
+              }}
 
-              return {handleCopyIconClick: handleCopyIconClick};
-            })();
+              return {{handleCopyIconClick: handleCopyIconClick}};
+            }})();
 
             copyToClipboard.handleCopyIconClick();
             </script>
-        """, unsafe_allow_html=True)
+        """, height=300)
 
 if __name__ == "__main__":
     translate()
