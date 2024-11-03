@@ -20,3 +20,4 @@ reportlab
 arabic_reshaper 
 python-bidi
 gunicorn
+PIL

@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_navigation_bar import st_navbar
 import app
 import translate
-
+import image
 # Set page configuration
 st.set_page_config(
     page_title="Doctor AI Assistant",
@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # Create the navigation bar with styles
-pages = ["Doctor AI Assistant", "Medical Report Translator"]
+pages = ["Doctor AI Assistant", "Medical Report Translator" ,"Medical Image Analysis"]
 styles = {
     "nav": {
         "background-color": "#990033",
@@ -58,5 +58,7 @@ page = st_navbar(pages, styles=styles)
 # Conditional rendering based on the selected page
 if page == "Doctor AI Assistant":
     app.app()  # Call the app function from app.py
-else:
+elif page=="Medical Report Translator":
     translate.translate()  # Call Call the translate function from translate.py # Call the translate function from translate.py
+else:
+    image.image()
