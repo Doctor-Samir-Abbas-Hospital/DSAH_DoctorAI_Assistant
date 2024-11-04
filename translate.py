@@ -169,180 +169,179 @@ def translate():
         )
 
         # Use st.components.v1.html for copy functionality
-        with st.slider:
-          st.components.v1.html(f"""
-              <div>
-                  <span class="copy-icon" role="button">==
-                      <span class="link-icon"></span>
-                  </span>
-                  <span class="toastbox" role="alert"></span>
-              </div>
+        st.components.v1.html(f"""
+            <div>
+                <span class="copy-icon" role="button">==
+                    <span class="link-icon"></span>
+                </span>
+                <span class="toastbox" role="alert"></span>
+            </div>
 
-              <div id="translated-text" style="display:none;">
-                  {translated_text}
-              </div>
+            <div id="translated-text" style="display:none;">
+                {translated_text}
+            </div>
 
-              <style>
-              body {{
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-              }}
+            <style>
+            body {{
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100vh;
+            }}
 
-              .copy-icon {{
-                cursor: pointer;
-                position: relative;
-                border: 5px solid white;
-                width: 20px;
-                height: 30px;
-                font-size: 40px;
-                line-height: 34px;
-                word-break: break-word;
-                text-align: center;
-                padding: 10px 1px 0;
-                user-select: none;
-              }}
+            .copy-icon {{
+              cursor: pointer;
+              position: relative;
+              border: 5px solid white;
+              width: 20px;
+              height: 30px;
+              font-size: 45px;
+              line-height: 34px;
+              word-break: break-word;
+              text-align: center;
+              padding: 10px 1px 0;
+              user-select: none;
+            }}
 
-              .copy-icon::after,
-              .copy-icon::before {{
-                content: '';
-                position: absolute;
-                border: solid black;
-                transform: translateX(-50%);
-                left: 50%;
-              }}
-              .copy-icon::after {{
-                border-width: 6px;
-                border-top-left-radius: 6px;
-                border-top-right-radius: 6px;
-                width: 20px;
-                top: -8px;
-              }}
-              .copy-icon::before {{
-                border-width: 6px;
-                bottom: 103%;
-                border-radius: 50%;
-                background-color: black;     
-              }}
+            .copy-icon::after,
+            .copy-icon::before {{
+              content: '';
+              position: absolute;
+              border: solid black;
+              transform: translateX(-50%);
+              left: 50%;
+            }}
+            .copy-icon::after {{
+              border-width: 6px;
+              border-top-left-radius: 6px;
+              border-top-right-radius: 6px;
+              width: 20px;
+              top: -8px;
+            }}
+            .copy-icon::before {{
+              border-width: 6px;
+              bottom: 103%;
+              border-radius: 50%;
+              background-color: black;     
+            }}
 
-              .link-icon {{
-                position: absolute;
-                bottom: -13px;
-                right: -20px;
-                border: 4px solid black;
-                width: 45px;
-                height: 17px;
-                border-radius: 40px;
-                background: white;
-                box-shadow: 0px 0px 0px 5px #fff;
-              }}
+            .link-icon {{
+              position: absolute;
+              bottom: -13px;
+              right: -20px;
+              border: 4px solid black;
+              width: 45px;
+              height: 17px;
+              border-radius: 40px;
+              background: white;
+              box-shadow: 0px 0px 0px 5px #fff;
+            }}
 
-              .link-icon::after,
-              .link-icon::before {{
-                content: '';
-                position: absolute;
-                border-style: solid;
-                width: 20px;
-              }}
+            .link-icon::after,
+            .link-icon::before {{
+              content: '';
+              position: absolute;
+              border-style: solid;
+              width: 20px;
+            }}
 
-              .link-icon::after {{
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                border-width: 2px;
-              }}
+            .link-icon::after {{
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              border-width: 2px;
+            }}
 
-              .link-icon::before {{
-                transform: rotate(-90deg);
-                left: 9px;
-                top: 5px;
-                border-color: white;
-                border-width: 4px;
-              }}
+            .link-icon::before {{
+              transform: rotate(-90deg);
+              left: 9px;
+              top: 5px;
+              border-color: white;
+              border-width: 4px;
+            }}
 
-              .toastbox {{
-                width: 100px;
-                padding: 10px;
-                background-color: rgba(0,0,0,.7);
-                color: white;
-                text-align: center;
-                border-radius: 4px;
-                position: fixed;
-                top: 105%;
-                transition: transform .3s linear;
-              }}
+            .toastbox {{
+              width: 100px;
+              padding: 10px;
+              background-color: rgba(0,0,0,.7);
+              color: white;
+              text-align: center;
+              border-radius: 4px;
+              position: fixed;
+              top: 105%;
+              transition: transform .3s linear;
+            }}
 
-              .toastbox.toast-tox--active {{
-                transform: translateY(-150px); 
-              }}
-              </style>
+            .toastbox.toast-tox--active {{
+              transform: translateY(-150px); 
+            }}
+            </style>
 
-              <script>
-              var copyToClipboard = (function () {{ 
-                var copyIcon = document.querySelector(".copy-icon");
-                var toastBox = document.querySelector(".toastbox");
-                var translatedText = document.getElementById("translated-text").textContent;
+            <script>
+            var copyToClipboard = (function () {{ 
+              var copyIcon = document.querySelector(".copy-icon");
+              var toastBox = document.querySelector(".toastbox");
+              var translatedText = document.getElementById("translated-text").textContent;
 
-                function isCopying(string) {{ 
-                  var textarea, result;
-                  try {{
-                    textarea = document.createElement('textarea');
-                    textarea.setAttribute('readonly', true);
-                    textarea.setAttribute('contenteditable', true);
-                    textarea.style.position = 'fixed'; 
-                    textarea.value = string;
+              function isCopying(string) {{ 
+                var textarea, result;
+                try {{
+                  textarea = document.createElement('textarea');
+                  textarea.setAttribute('readonly', true);
+                  textarea.setAttribute('contenteditable', true);
+                  textarea.style.position = 'fixed'; 
+                  textarea.value = string;
 
-                    document.body.appendChild(textarea);
+                  document.body.appendChild(textarea);
 
-                    textarea.select();
+                  textarea.select();
 
-                    var range = document.createRange();
-                    range.selectNodeContents(textarea);
+                  var range = document.createRange();
+                  range.selectNodeContents(textarea);
 
-                    var selectedText = window.getSelection();
-                    selectedText.removeAllRanges();
-                    selectedText.addRange(range);
+                  var selectedText = window.getSelection();
+                  selectedText.removeAllRanges();
+                  selectedText.addRange(range);
 
-                    textarea.setSelectionRange(0, textarea.value.length);
-                    result = document.execCommand('copy');
-                  }} catch (err) {{
-                    console.error(err);
-                    result = null;
-                  }} finally {{
-                    document.body.removeChild(textarea);
-                  }}
+                  textarea.setSelectionRange(0, textarea.value.length);
+                  result = document.execCommand('copy');
+                }} catch (err) {{
+                  console.error(err);
+                  result = null;
+                }} finally {{
+                  document.body.removeChild(textarea);
+                }}
+                if (!result) {{
+                  result = prompt("Copy the text", string); 
                   if (!result) {{
-                    result = prompt("Copy the text", string); 
-                    if (!result) {{
-                      return false;
-                    }}
+                    return false;
                   }}
-                  return true;
                 }}
+                return true;
+              }}
 
-                function showToastBox(message) {{
-                  toastBox.textContent = message;
-                  setTimeout(function () {{
-                    toastBox.classList.add("toast-tox--active");
-                  }}, 500);
-                  setTimeout(function () {{
-                    toastBox.classList.remove("toast-tox--active");
-                  }}, 3000);
-                }}
+              function showToastBox(message) {{
+                toastBox.textContent = message;
+                setTimeout(function () {{
+                  toastBox.classList.add("toast-tox--active");
+                }}, 500);
+                setTimeout(function () {{
+                  toastBox.classList.remove("toast-tox--active");
+                }}, 3000);
+              }}
 
-                function handleCopyIconClick() {{
-                  copyIcon.addEventListener("click", function(){{
-                    showToastBox(isCopying(translatedText) ? "Text copied successfully" : "Unable to copy");
-                  }});
-                }}
+              function handleCopyIconClick() {{
+                copyIcon.addEventListener("click", function(){{
+                  showToastBox(isCopying(translatedText) ? "Text copied successfully" : "Unable to copy");
+                }});
+              }}
 
-                return {{handleCopyIconClick: handleCopyIconClick}};
-              }})();
+              return {{handleCopyIconClick: handleCopyIconClick}};
+            }})();
 
-              copyToClipboard.handleCopyIconClick();
-              </script>
-          """, height=250)
+            copyToClipboard.handleCopyIconClick();
+            </script>
+        """, height=250)
 
 if __name__ == "__main__":
     translate()
