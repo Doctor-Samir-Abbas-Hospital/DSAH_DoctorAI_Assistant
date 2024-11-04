@@ -152,26 +152,36 @@ def translate():
         edited_text = st.text_area(
             "Edit Translated Text",
             value=translated_text,
-            height=400
+            height=400,
+            key="translatedText"
         )
 
-        # JavaScript for copying to the clipboard
+        # Add FontAwesome icons and JavaScript for copy functionality
         st.markdown(
             """
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
             <script>
                 function copyToClipboard() {
                     var copyText = document.getElementById("translatedText");
-                    copyText.select();
-                    document.execCommand("copy");
-                    alert("Copied to clipboard!");
+                    navigator.clipboard.writeText(copyText.value).then(() => {
+                        alert("Copied to clipboard!");
+                    });
                 }
             </script>
+            <style>
+                .icon-button {
+                    cursor: pointer;
+                    font-size: 1.5em;
+                    color: #4CAF50;
+                    margin-top: 10px;
+                }
+            </style>
+            <div class="icon-button" onclick="copyToClipboard()">
+                <i class="fas fa-copy"></i> Copy
+            </div>
             """,
             unsafe_allow_html=True,
         )
-        
-        # Button for copying text
-        st.button("Copy to Clipboard", on_click=lambda: st.experimental_rerun())
 
         # Create a PDF with the edited text
         pdf_buffer = create_pdf(edited_text)
