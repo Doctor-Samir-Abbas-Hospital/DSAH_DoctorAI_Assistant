@@ -5,7 +5,7 @@ from PIL import Image
 import io
 
 # Set up the Gork API endpoint and key
-GORK_API_URL = "https://api.x.ai/v1/analyze"
+GORK_API_URL = "https://api.x.ai/v1"
 XAI_API_KEY = os.getenv("XAI_API_KEY")
 
 def analyze_image(image_data, prompt):
