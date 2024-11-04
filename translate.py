@@ -143,9 +143,9 @@ def translate():
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
             with st.chat_message("AI", avatar="🤖"):
                 response = get_response_(translation_prompt + " " + pdf_text)
-                st.text_area(response)
+                st.write(response)
                 st.session_state.chat_history1.append(AIMessage(content=response))
-                translated_text = response
+                translated_text = clean_text(response)
 
             st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
@@ -159,31 +159,40 @@ def translate():
             mime="application/pdf"
         )
 
-        # Render the translated text into a textarea and add copy functionality
-        st.text_area(
-            "Translated Text", 
-            value=translated_text, 
-            key="translated_text_area", 
-            height=200
-        )
-
-        # HTML and JS for copy functionality
+        # HTML, CSS, and JS for rendering and copying the text
         st.components.v1.html(
             f"""
-            <textarea id="textArea" style="display:none;">{translated_text}</textarea>
-            <button onclick="copyToClipboard()">Copy to Clipboard</button>
+            <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif;">
+                <textarea id="translatedText" readonly style="width: 100%; height: auto; border: none; overflow: hidden; resize: none;">
+                {translated_text}
+                </textarea>
+                <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy to Clipboard</button>
+            </div>
             <script>
                 function copyToClipboard() {{
-                    var copyText = document.getElementById("textArea");
-                    copyText.style.display = "block";
+                    var copyText = document.getElementById("translatedText");
                     copyText.select();
                     document.execCommand("copy");
-                    copyText.style.display = "none";
                     alert("Copied to clipboard!");
                 }}
             </script>
+            <style>
+                textarea {{
+                    min-height: 150px;
+                    max-height: 500px;
+                    overflow-y: auto;
+                    font-size: 16px;
+                }}
+                button {{
+                    cursor: pointer;
+                    background-color: #4CAF50;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                }}
+            </style>
             """,
-            height=50,
+            height=300,
         )
 
 if __name__ == "__main__":
