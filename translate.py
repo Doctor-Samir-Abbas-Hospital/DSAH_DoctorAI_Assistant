@@ -141,10 +141,9 @@ def translate():
                     pdf_text += page.extract_text()
 
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
-            with st.chat_message("AI", avatar="🤖"):
-                response = get_response_(translation_prompt + " " + pdf_text)
-                st.session_state.chat_history1.append(AIMessage(content=response))
-                translated_text = clean_text(response)
+            response = get_response_(translation_prompt + " " + pdf_text)
+            st.session_state.chat_history1.append(AIMessage(content=response))
+            translated_text = clean_text(response)
 
             st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
@@ -162,24 +161,32 @@ def translate():
         st.components.v1.html(
             f"""
             <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif;">
-                <textarea id="translatedText" readonly style="width: 100%; height: auto; border: none; overflow: hidden; resize: none;">
-                {translated_text}
-                </textarea>
+                <textarea id="translatedText" readonly style="width: 100%; height: auto; border: none; overflow: hidden; resize: none;"
+                oninput="autoResize(this)">{translated_text}</textarea>
                 <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy to Clipboard</button>
             </div>
             <script>
+                function autoResize(textarea) {{
+                    textarea.style.height = 'auto';
+                    textarea.style.height = (textarea.scrollHeight) + 'px';
+                }}
                 function copyToClipboard() {{
                     var copyText = document.getElementById("translatedText");
                     copyText.select();
                     document.execCommand("copy");
                     alert("Copied to clipboard!");
                 }}
+                // Initial resize
+                document.addEventListener('DOMContentLoaded', function() {{
+                    autoResize(document.getElementById("translatedText"));
+                }});
             </script>
             <style>
                 textarea {{
                     height:auto;
-                    overflow-y: auto;
+                    overflow-y: hidden;
                     font-size: 16px;
+                    line-height: 1.5;
                 }}
                 button {{
                     cursor: pointer;
