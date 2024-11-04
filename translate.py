@@ -148,42 +148,32 @@ def translate():
             st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
     if translated_text:
-        # HTML, CSS, and JS for rendering and copying the text
-        st.components.v1.html(
-            f"""
-            <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif; max-width: 100%; box-sizing: border-box;">
-                <textarea id="translatedText" style="width: 100%; height: 60vh; border: 1px solid #ccc; overflow-y: auto; resize: both;">{translated_text}</textarea>
-                <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy to Clipboard</button>
-            </div>
+        # Use Streamlit's text_area for editing
+        edited_text = st.text_area(
+            "Edit Translated Text",
+            value=translated_text,
+            height=400
+        )
+
+        # JavaScript for copying to the clipboard
+        st.markdown(
+            """
             <script>
-                function copyToClipboard() {{
+                function copyToClipboard() {
                     var copyText = document.getElementById("translatedText");
                     copyText.select();
                     document.execCommand("copy");
                     alert("Copied to clipboard!");
-                }}
+                }
             </script>
-            <style>
-                textarea {{
-                    font-size: 16px;
-                    line-height: 1.5;
-                    width: 100%;
-                    box-sizing: border-box;
-                }}
-                button {{
-                    cursor: pointer;
-                    background-color: #4CAF50;
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                }}
-            </style>
             """,
-            height=1500,
+            unsafe_allow_html=True,
         )
+        
+        # Button for copying text
+        st.button("Copy to Clipboard", on_click=lambda: st.experimental_rerun())
 
         # Create a PDF with the edited text
-        edited_text = st.text_area("Edit Translated Text", value=translated_text, height=300)
         pdf_buffer = create_pdf(edited_text)
 
         st.sidebar.download_button(
