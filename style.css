@@ -23,24 +23,7 @@
 [data-testid="stChatInputSubmitButton"]{
   border: none !important;
 }
-::-webkit-scrollbar {
-  width: 18px;
-  }
 
-  /* Track */
-  ::-webkit-scrollbar-track {
-    background: linear-gradient(to right, rgb(182, 244, 146), rgb(73, 187, 216)) !important;
-  }
-
-  /* Handle */
-  ::-webkit-scrollbar-thumb {
-  background: #af023b !important;
-  }
-
-  /* Handle on hover */
-  ::-webkit-scrollbar-thumb:hover {
-  background: white !important;
-  }
 
 /*header*/
 /*

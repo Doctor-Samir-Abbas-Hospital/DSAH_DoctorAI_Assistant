@@ -143,7 +143,6 @@ def translate():
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
             with st.chat_message("AI", avatar="🤖"):
                 response = get_response_(translation_prompt + " " + pdf_text)
-                st.write(response)
                 st.session_state.chat_history1.append(AIMessage(content=response))
                 translated_text = clean_text(response)
 
@@ -178,8 +177,7 @@ def translate():
             </script>
             <style>
                 textarea {{
-                    min-height: 150px;
-                    max-height: 500px;
+                    height:auto;
                     overflow-y: auto;
                     font-size: 16px;
                 }}
@@ -192,7 +190,7 @@ def translate():
                 }}
             </style>
             """,
-            height=300,
+            height=1500,
         )
 
 if __name__ == "__main__":
