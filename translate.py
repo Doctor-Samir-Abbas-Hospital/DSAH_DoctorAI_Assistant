@@ -148,38 +148,20 @@ def translate():
             st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
     if translated_text:
-        pdf_buffer = create_pdf(translated_text)
-
-        st.sidebar.download_button(
-            label="Download Translated Report",
-            data=pdf_buffer,
-            file_name="translated_report.pdf",
-            mime="application/pdf"
-        )
-
         # HTML, CSS, and JS for rendering and copying the text
         st.components.v1.html(
             f"""
             <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif; max-width: 100%; box-sizing: border-box;">
-                <textarea id="translatedText" readonly style="width: 100%; height: 300px; max-height: 60vh; border: 1px solid #ccc; overflow-y: auto; resize: none;"
-                oninput="autoResize(this)">{translated_text}</textarea>
+                <textarea id="translatedText" style="width: 100%; height: 60vh; border: 1px solid #ccc; overflow-y: auto; resize: both;">{translated_text}</textarea>
                 <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy to Clipboard</button>
             </div>
             <script>
-                function autoResize(textarea) {{
-                    textarea.style.height = 'auto';
-                    textarea.style.height = (textarea.scrollHeight) + 'px';
-                }}
                 function copyToClipboard() {{
                     var copyText = document.getElementById("translatedText");
                     copyText.select();
                     document.execCommand("copy");
                     alert("Copied to clipboard!");
                 }}
-                // Initial resize
-                document.addEventListener('DOMContentLoaded', function() {{
-                    autoResize(document.getElementById("translatedText"));
-                }});
             </script>
             <style>
                 textarea {{
@@ -198,6 +180,17 @@ def translate():
             </style>
             """,
             height=1500,
+        )
+
+        # Create a PDF with the edited text
+        edited_text = st.text_area("Edit Translated Text", value=translated_text, height=300)
+        pdf_buffer = create_pdf(edited_text)
+
+        st.sidebar.download_button(
+            label="Download Translated Report",
+            data=pdf_buffer,
+            file_name="translated_report.pdf",
+            mime="application/pdf"
         )
 
 if __name__ == "__main__":
