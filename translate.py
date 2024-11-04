@@ -160,8 +160,8 @@ def translate():
         # HTML, CSS, and JS for rendering and copying the text
         st.components.v1.html(
             f"""
-            <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif;">
-                <textarea id="translatedText" readonly style="width: 100%; height: auto; border: none; overflow: hidden; resize: none;"
+            <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif; max-width: 100%; box-sizing: border-box;">
+                <textarea id="translatedText" readonly style="width: 100%; height: 300px; max-height: 60vh; border: 1px solid #ccc; overflow-y: auto; resize: none;"
                 oninput="autoResize(this)">{translated_text}</textarea>
                 <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy to Clipboard</button>
             </div>
@@ -183,10 +183,10 @@ def translate():
             </script>
             <style>
                 textarea {{
-                    height:auto;
-                    overflow-y: hidden;
                     font-size: 16px;
                     line-height: 1.5;
+                    width: 100%;
+                    box-sizing: border-box;
                 }}
                 button {{
                     cursor: pointer;
