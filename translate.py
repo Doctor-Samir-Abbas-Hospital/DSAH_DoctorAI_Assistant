@@ -152,6 +152,7 @@ def translate():
         edited_text = st.text_area(
             "Edit Translated Text",
             value=translated_text,
+            height=1050,
             key="translatedText"
         )
 
