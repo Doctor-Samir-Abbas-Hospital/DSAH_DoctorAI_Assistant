@@ -2,10 +2,6 @@ import os
 from dotenv import load_dotenv
 import streamlit as st
 from langchain_core.messages import AIMessage
-from langchain_community.vectorstores.qdrant import Qdrant
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
-from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
 from io import BytesIO
 import arabic_reshaper
@@ -15,11 +11,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.fonts import addMapping
 from reportlab.lib.utils import simpleSplit
-from utils.functions import (
-    get_vector_store,
-    get_response_,
-)
+from utils.functions import get_vector_store, get_response_
 
 # Load environment variables
 load_dotenv()
@@ -27,6 +21,7 @@ load_dotenv()
 # Register Arabic font (Arial)
 font_path = os.path.join('assets', 'Arial.ttf')
 pdfmetrics.registerFont(TTFont('Arial', font_path))
+addMapping('Arial', 0, 0, 'Arial')
 
 def reshape_arabic_text(text):
     """Reshapes and applies bidi formatting for Arabic text."""
@@ -41,54 +36,50 @@ def clean_text(text):
 def create_pdf(translated_text):
     """Creates a well-formatted PDF using ReportLab."""
     
-    # Create a PDF canvas
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
-
-    # Set document metadata
     c.setTitle("Translated Medical Report")
     c.setAuthor("Doctor AI Assistant")
 
-    # Set up page sizes and margins
     width, height = A4
     margin = inch
-    text_width = width - 2 * margin  # Calculate usable text width
+    text_width = width - 2 * margin
 
-    # Prepare text
     reshaped_text = reshape_arabic_text(clean_text(translated_text))
     lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)
 
-    y = height - margin  # Start drawing text just below the margin
+    y = height - margin
 
-    # Set font size
     c.setFont("Arial", 12)
 
-    # Right-align text for RTL Arabic
     for line in lines:
-        if y < margin:  # If not enough space, move to the next page
+        if y < margin:
             c.showPage()
             c.setFont("Arial", 12)
             y = height - margin
 
         c.drawRightString(width - margin, y, line)
-        y -= 14  # Move down for the next line
+        y -= 14
 
-    # Finalize the PDF
     c.save()
-
     buffer.seek(0)
     return buffer
 
 def translate():
-    # Initialize session state variables
-    if "translated_text" not in st.session_state:
-        st.session_state.translated_text = ""
+    if "translate_state" not in st.session_state:
+        st.session_state.translate_state = {}
 
     if "chat_history1" not in st.session_state:
-        st.session_state.chat_history1 = []  # Initialize chat_history
-    
+        st.session_state.chat_history1 = []
+
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vector_store()
+
+    if "pdf_text" not in st.session_state:
+        st.session_state.pdf_text = ""
+
+    if "translated_text" not in st.session_state:
+        st.session_state.translated_text = ""
 
     with open('style.css') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
@@ -98,7 +89,7 @@ def translate():
         name = "Medical Diagnosis and More..."
         profession = "Doctor Samir Abbas Hospital"
         imgUrl = "https://media3.giphy.com/media/6P47BlxlgrJxQ9GR58/giphy.gif"
-        
+
         st.markdown(
             f"""
                 <img class="profileImage" src="{imgUrl}" alt="Your Photo">
@@ -111,83 +102,73 @@ def translate():
             """,
             unsafe_allow_html=True,
         )
-        
+
         uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
+        st.session_state.uploaded_file = uploaded_file
 
-        # Show the translate button only if a file is uploaded
         if uploaded_file:
+            st.session_state.pdf_text = ""
             translate_button = st.button("Translate The Medical Report")
+            if translate_button:
+                st.markdown("""
+                    <div class="typewriter">
+                        <div class="slide"><i></i></div>
+                        <div class="paper"></div>
+                        <div class="keyboard"></div>
+                    </div>
+                """, unsafe_allow_html=True)
 
-    pdf_text = ""
+                with st.spinner("Please wait, it's translating the text..."):
+                    reader = PdfReader(uploaded_file)
+                    for page in reader.pages:
+                        st.session_state.pdf_text += page.extract_text()
 
-    if uploaded_file and translate_button:
-        st.markdown("""
-            <div class="typewriter">
-                <div class="slide"><i></i></div>
-                <div class="paper"></div>
-                <div class="keyboard"></div>
-            </div>
-        """, unsafe_allow_html=True)
+                    translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
+                    response = get_response_(translation_prompt + " " + st.session_state.pdf_text)
+                    st.session_state.chat_history1.append(AIMessage(content=response))
+                    st.session_state.translated_text = clean_text(response)
 
-        # Add spinner below the typewriter
-        with st.spinner("Please wait, it's translating the text..."):
-            with st.spinner("Reading PDF..."):
-                reader = PdfReader(uploaded_file)
-                for page in reader.pages:
-                    pdf_text += page.extract_text()
-
-            translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
-            response = get_response_(translation_prompt + " " + pdf_text)
-            st.session_state.chat_history1.append(AIMessage(content=response))
-            st.session_state.translated_text = clean_text(response)
-
-            st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
-
+                st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
+ # tab 1 the original translation:
     if st.session_state.translated_text:
-        # Use Streamlit's text_area for editing
-        edited_text = st.text_area(
-            "Edit Translated Text",
-            value=st.session_state.translated_text,
-            height=600,
-            key="textarea"
-        )
-
-        # Update session state with edited text
-        st.session_state.translated_text = edited_text
-
-        # Add FontAwesome icons and JavaScript for copy functionality
-        st.components.v1.html(
-            """
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-            <script>
-                function copyToClipboard() {
-                    var copyText = document.getElementsByName('textarea')[0];
-                    copyText.select();
-                    document.execCommand('copy');
-                    alert('Copied to clipboard!');
-                }
-            </script>
-            <style>
-                .icon-button {
-                    cursor: pointer;
-                    font-size: 1.5em;
-                    color: #4CAF50;
-                    margin-top: 10px;
-                }
-                textarea {
-                    direction: rtl;
-                    text-align: right;
-                }
-            </style>
-            <div class="icon-button" onclick="copyToClipboard()">
-                <i class="fas fa-copy"></i> Copy
-            </div>
-            """,
-            height=60,
-        )
-
-        # Create a PDF with the edited text
-        pdf_buffer = create_pdf(edited_text)
+        tab1, tab2 = st.tabs(["Original Translation", "Edit the Translation"])
+        with tab1:
+          st.components.v1.html(
+              f"""
+              <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif;  box-sizing: border-box;">
+                  <textarea id="translatedText" style="width: 100%; height: 70vh; border: 1px solid #ccc; overflow-y: auto; resize: both;">{st.session_state.translated_text}</textarea>
+                  <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy Translation 📕</button>
+              </div>
+              <script>
+                  function copyToClipboard() {{
+                      var copyText = document.getElementById("translatedText");
+                      copyText.select();
+                      document.execCommand("copy");
+                      alert("Copied to clipboard!");
+                  }}
+              </script>
+              <style>
+                  textarea {{
+                      font-size: 16px;
+                      line-height: 1.5;
+                      width: 850px;
+                      box-sizing: border-box;
+                  }}
+                  button {{
+                      cursor: pointer;
+                      background-color: #4CAF50;
+                      color: white;
+                      border: none;
+                      border-radius: 5px;
+                  }}
+              </style>
+              """,
+              height=1500,
+          )
+        # tab 2 edit the translaition
+        with tab2:
+          edited_text = st.text_area("Edit Translated Text", value=st.session_state.translated_text, height=1000)
+          pdf_buffer = create_pdf(edited_text)
 
         st.sidebar.download_button(
             label="Download Translated Report",
