@@ -1,9 +1,9 @@
 import os
 from dotenv import load_dotenv
 import streamlit as st
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage
 from langchain_community.vectorstores.qdrant import Qdrant
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from PyPDF2 import PdfReader
@@ -15,8 +15,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
-from reportlab.lib import colors
-from reportlab.lib.fonts import addMapping
 from reportlab.lib.utils import simpleSplit
 from utils.functions import (
     get_vector_store,
@@ -29,7 +27,6 @@ load_dotenv()
 # Register Arabic font (Arial)
 font_path = os.path.join('assets', 'Arial.ttf')
 pdfmetrics.registerFont(TTFont('Arial', font_path))
-addMapping('Arial', 0, 0, 'Arial')
 
 def reshape_arabic_text(text):
     """Reshapes and applies bidi formatting for Arabic text."""
@@ -84,8 +81,8 @@ def create_pdf(translated_text):
 
 def translate():
     # Initialize session state variables
-    if "translate_state" not in st.session_state:
-        st.session_state.translate_state = {}
+    if "translated_text" not in st.session_state:
+        st.session_state.translated_text = ""
 
     if "chat_history1" not in st.session_state:
         st.session_state.chat_history1 = []  # Initialize chat_history
@@ -122,7 +119,6 @@ def translate():
             translate_button = st.button("Translate The Medical Report")
 
     pdf_text = ""
-    translated_text = ""
 
     if uploaded_file and translate_button:
         st.markdown("""
@@ -143,18 +139,21 @@ def translate():
             translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
             response = get_response_(translation_prompt + " " + pdf_text)
             st.session_state.chat_history1.append(AIMessage(content=response))
-            translated_text = clean_text(response)
+            st.session_state.translated_text = clean_text(response)
 
             st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
-    if translated_text:
+    if st.session_state.translated_text:
         # Use Streamlit's text_area for editing
         edited_text = st.text_area(
             "Edit Translated Text",
-            value=translated_text,
-            height=1050,
-            key="translatedText"
+            value=st.session_state.translated_text,
+            height=600,
+            key="textarea"
         )
+
+        # Update session state with edited text
+        st.session_state.translated_text = edited_text
 
         # Add FontAwesome icons and JavaScript for copy functionality
         st.components.v1.html(
@@ -162,10 +161,10 @@ def translate():
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
             <script>
                 function copyToClipboard() {
-                    var copyText = document.getElementById("translatedText").value;
-                    navigator.clipboard.writeText(copyText).then(() => {
-                        alert("Copied to clipboard!");
-                    });
+                    var copyText = document.getElementsByName('textarea')[0];
+                    copyText.select();
+                    document.execCommand('copy');
+                    alert('Copied to clipboard!');
                 }
             </script>
             <style>
@@ -174,6 +173,10 @@ def translate():
                     font-size: 1.5em;
                     color: #4CAF50;
                     margin-top: 10px;
+                }
+                textarea {
+                    direction: rtl;
+                    text-align: right;
                 }
             </style>
             <div class="icon-button" onclick="copyToClipboard()">
