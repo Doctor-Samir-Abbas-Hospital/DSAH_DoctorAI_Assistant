@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 import streamlit as st
 from langchain_core.messages import AIMessage
-from PyPDF2 import PdfReader
+from PyPDF2 import PdfReader, PdfWriter
 from io import BytesIO
 import arabic_reshaper
 from bidi.algorithm import get_display
@@ -32,38 +32,84 @@ def reshape_arabic_text(text):
 def clean_text(text):
     """Removes unwanted characters and cleans the text."""
     return text.replace('*', '').replace('#', '')
-
 def create_pdf(translated_text):
-    """Creates a well-formatted PDF using ReportLab."""
-    
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    c.setTitle("Translated Medical Report")
-    c.setAuthor("Doctor AI Assistant")
+    """Creates a PDF using hospital template and adds translated text."""
+    try:
+        template_path = os.path.join('assets', 'hospital_template.pdf')
+        if not os.path.exists(template_path):
+            raise FileNotFoundError("Hospital template PDF not found")
 
-    width, height = A4
-    margin = inch
-    text_width = width - 2 * margin
+        # Create a buffer for the translated text
+        text_buffer = BytesIO()
+        c = canvas.Canvas(text_buffer, pagesize=A4)
+        c.setTitle("Translated Medical Report")
+        c.setAuthor("Doctor AI Assistant")
 
-    reshaped_text = reshape_arabic_text(clean_text(translated_text))
-    lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)
+        width, height = A4
+        margin = inch
+        text_width = width - 2 * margin
 
-    y = height - margin
+        # Process the translated text
+        reshaped_text = reshape_arabic_text(clean_text(translated_text))
+        lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)
 
-    c.setFont("Arial", 12)
+        # Starting position for text
+        y = height - 2 * margin  # Adjusted to leave space for header
 
-    for line in lines:
-        if y < margin:
-            c.showPage()
-            c.setFont("Arial", 12)
-            y = height - margin
+        c.setFont("Arial", 12)
 
-        c.drawRightString(width - margin, y, line)
-        y -= 14
+        # Draw text
+        for line in lines:
+            if y < margin:
+                c.showPage()
+                c.setFont("Arial", 12)
+                y = height - 2 * margin
 
-    c.save()
-    buffer.seek(0)
-    return buffer
+            c.drawRightString(width - margin, y, line)
+            y -= 14
+
+        c.save()
+        text_buffer.seek(0)
+
+        # Create final PDF by merging template and text
+        output_buffer = BytesIO()
+        
+        # Load template PDF
+        template_pdf = PdfReader(template_path)
+        output_pdf = PdfWriter()
+
+        # Load the PDF with translated text
+        text_pdf = PdfReader(text_buffer)
+
+        # Merge template with text for each page
+        for i in range(max(len(template_pdf.pages), len(text_pdf.pages))):
+            # Get template page (use first page if template has only one page)
+            template_page = template_pdf.pages[0 if len(template_pdf.pages) == 1 else i % len(template_pdf.pages)]
+            
+            # Create a new page with the template
+            new_page = PdfWriter().add_blank_page(width=template_page.mediabox.width, 
+                                                  height=template_page.mediabox.height)
+            
+            # Merge the template page
+            new_page.merge_page(template_page)
+
+            # If there's a corresponding text page, merge it
+            if i < len(text_pdf.pages):
+                text_page = text_pdf.pages[i]
+                new_page.merge_page(text_page)
+
+            output_pdf.add_page(new_page)
+
+        # Write the final PDF to buffer
+        output_buffer = BytesIO()
+        output_pdf.write(output_buffer)
+        output_buffer.seek(0)
+        
+        return output_buffer
+
+    except Exception as e:
+        st.error(f"Error creating PDF: {str(e)}")
+        return None
 
 def translate():
     if "translate_state" not in st.session_state:
@@ -129,53 +175,57 @@ def translate():
                     st.session_state.translated_text = clean_text(response)
 
                 st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
- # tab 1 the original translation:
+
+    # tab 1 the original translation:
     if st.session_state.translated_text:
         tab1, tab2 = st.tabs(["Original Translation", "Edit the Translation"])
         with tab1:
-          st.components.v1.html(
-              f"""
-              <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif;  box-sizing: border-box;">
-                  <textarea id="translatedText" style="width: 100%; height: 70vh; border: 1px solid #ccc; overflow-y: auto; resize: both;">{st.session_state.translated_text}</textarea>
-                  <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy Translation 📕</button>
-              </div>
-              <script>
-                  function copyToClipboard() {{
-                      var copyText = document.getElementById("translatedText");
-                      copyText.select();
-                      document.execCommand("copy");
-                      alert("Copied to clipboard!");
-                  }}
-              </script>
-              <style>
-                  textarea {{
-                      font-size: 16px;
-                      line-height: 1.5;
-                      width: 850px;
-                      box-sizing: border-box;
-                  }}
-                  button {{
-                      cursor: pointer;
-                      background-color: #4CAF50;
-                      color: white;
-                      border: none;
-                      border-radius: 5px;
-                  }}
-              </style>
-              """,
-              height=1500,
-          )
-        # tab 2 edit the translaition
+            st.components.v1.html(
+                f"""
+                <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif;  box-sizing: border-box;">
+                    <textarea id="translatedText" style="width: 100%; height: 70vh; border: 1px solid #ccc; overflow-y: auto; resize: both;">{st.session_state.translated_text}</textarea>
+                    <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy Translation 📕</button>
+                </div>
+                <script>
+                    function copyToClipboard() {{
+                        var copyText = document.getElementById("translatedText");
+                        copyText.select();
+                        document.execCommand("copy");
+                        alert("Copied to clipboard!");
+                    }}
+                </script>
+                <style>
+                    textarea {{
+                        font-size: 16px;
+                        line-height: 1.5;
+                        width: 850px;
+                        box-sizing: border-box;
+                    }}
+                    button {{
+                        cursor: pointer;
+                        background-color: #4CAF50;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                    }}
+                </style>
+                """,
+                height=1500,
+            )
+        # tab 2 edit the translation
         with tab2:
-          edited_text = st.text_area("Edit Translated Text", value=st.session_state.translated_text, height=1000)
-          pdf_buffer = create_pdf(edited_text)
-
-        st.sidebar.download_button(
-            label="Download Translated Report",
-            data=pdf_buffer,
-            file_name="translated_report.pdf",
-            mime="application/pdf"
-        )
+            edited_text = st.text_area("Edit Translated Text", value=st.session_state.translated_text, height=1000)
+            pdf_buffer = create_pdf(edited_text)
+            
+            if pdf_buffer:
+                st.sidebar.download_button(
+                    label="Download Translated Report",
+                    data=pdf_buffer,
+                    file_name="translated_report.pdf",
+                    mime="application/pdf"
+                )
+            else:
+                st.sidebar.error("Unable to generate PDF. Please check if the template exists.")
 
 if __name__ == "__main__":
     translate()
