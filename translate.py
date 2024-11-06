@@ -32,6 +32,7 @@ def reshape_arabic_text(text):
 def clean_text(text):
     """Removes unwanted characters and cleans the text."""
     return text.replace('*', '').replace('#', '')
+
 def create_pdf(translated_text):
     """Creates a PDF using hospital template and adds translated text."""
     try:
@@ -60,7 +61,7 @@ def create_pdf(translated_text):
 
         # Draw text
         for line in lines:
-            if y < margin:
+            if y < 1.7 * margin:  # Adjusted to leave space at bottom
                 c.showPage()
                 c.setFont("Arial", 12)
                 y = height - 2 * margin
@@ -149,83 +150,78 @@ def translate():
             unsafe_allow_html=True,
         )
 
-        uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
-        st.session_state.uploaded_file = uploaded_file
+    uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
+    st.session_state.uploaded_file = uploaded_file
 
-        if uploaded_file:
-            st.session_state.pdf_text = ""
-            translate_button = st.button("Translate The Medical Report")
-            if translate_button:
-                st.markdown("""
-                    <div class="typewriter">
-                        <div class="slide"><i></i></div>
-                        <div class="paper"></div>
-                        <div class="keyboard"></div>
-                    </div>
-                """, unsafe_allow_html=True)
-
-                with st.spinner("Please wait, it's translating the text..."):
-                    reader = PdfReader(uploaded_file)
-                    for page in reader.pages:
-                        st.session_state.pdf_text += page.extract_text()
-
-                    translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
-                    response = get_response_(translation_prompt + " " + st.session_state.pdf_text)
-                    st.session_state.chat_history1.append(AIMessage(content=response))
-                    st.session_state.translated_text = clean_text(response)
-
-                st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
-
-    # tab 1 the original translation:
-    if st.session_state.translated_text:
-        tab1, tab2 = st.tabs(["Original Translation", "Edit the Translation"])
-        with tab1:
-            st.components.v1.html(
-                f"""
-                <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif;  box-sizing: border-box;">
-                    <textarea id="translatedText" style="width: 100%; height: 70vh; border: 1px solid #ccc; overflow-y: auto; resize: both;">{st.session_state.translated_text}</textarea>
-                    <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy Translation 📕</button>
+    if uploaded_file:
+        translate_button = st.button("Translate The Medical Report")
+        if translate_button:
+            st.markdown("""
+                <div class="typewriter">
+                    <div class="slide"><i></i></div>
+                    <div class="paper"></div>
+                    <div class="keyboard"></div>
                 </div>
-                <script>
-                    function copyToClipboard() {{
-                        var copyText = document.getElementById("translatedText");
-                        copyText.select();
-                        document.execCommand("copy");
-                        alert("Copied to clipboard!");
-                    }}
-                </script>
-                <style>
-                    textarea {{
-                        font-size: 16px;
-                        line-height: 1.5;
-                        width: 850px;
-                        box-sizing: border-box;
-                    }}
-                    button {{
-                        cursor: pointer;
-                        background-color: #4CAF50;
-                        color: white;
-                        border: none;
-                        border-radius: 5px;
-                    }}
-                </style>
-                """,
-                height=1500,
+            """, unsafe_allow_html=True)
+
+            with st.spinner("Please wait, it's translating the text..."):
+                reader = PdfReader(uploaded_file)
+                st.session_state.pdf_text = ""
+                for page in reader.pages:
+                    st.session_state.pdf_text += page.extract_text()
+
+                translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
+                response = get_response_(translation_prompt + " " + st.session_state.pdf_text)
+                st.session_state.chat_history1.append(AIMessage(content=response))
+                st.session_state.translated_text = clean_text(response)
+
+            st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
+
+    if st.session_state.translated_text:
+        st.components.v1.html(
+            f"""
+            <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif; box-sizing: border-box;">
+                <textarea id="translatedText" style="width: 100%; height: 90vh; border: 1px solid #ccc; overflow-y: auto; resize: both;">{st.session_state.translated_text}</textarea>
+                <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy Translation 📕</button>
+            </div>
+            <script>
+                function copyToClipboard() {{
+                    var copyText = document.getElementById("translatedText");
+                    copyText.select();
+                    document.execCommand("copy");
+                    alert("Copied to clipboard!");
+                }}
+            </script>
+            <style>
+                textarea {{
+                    font-size: 16px;
+                    line-height: 1.5;
+                    width: 100%;
+                    box-sizing: border-box;
+                }}
+                button {{
+                    cursor: pointer;
+                    background-color: #4CAF50;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                }}
+            </style>
+            """,
+            height=1000,
+        )
+
+        pdf_buffer = create_pdf(st.session_state.translated_text)
+        
+        if pdf_buffer:
+            st.sidebar.download_button(
+                label="Download Translated Report",
+                data=pdf_buffer,
+                file_name="translated_report.pdf",
+                mime="application/pdf"
             )
-        # tab 2 edit the translation
-        with tab2:
-            edited_text = st.text_area("Edit Translated Text", value=st.session_state.translated_text, height=1000)
-            pdf_buffer = create_pdf(edited_text)
-            
-            if pdf_buffer:
-                st.sidebar.download_button(
-                    label="Download Translated Report",
-                    data=pdf_buffer,
-                    file_name="translated_report.pdf",
-                    mime="application/pdf"
-                )
-            else:
-                st.sidebar.error("Unable to generate PDF. Please check if the template exists.")
+        else:
+            st.error("Unable to generate PDF. Please check if the template exists.")
 
 if __name__ == "__main__":
     translate()
