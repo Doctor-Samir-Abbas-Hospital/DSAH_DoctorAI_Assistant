@@ -214,7 +214,7 @@ def translate():
 
                 textarea {{
                     font-size: 18px;
-                    line-height: 1.5;
+                    line-height: 1;
                     margin: 0 0 10px 0;
                     border: 1px solid #ddd;
                     border-radius: 4px;
