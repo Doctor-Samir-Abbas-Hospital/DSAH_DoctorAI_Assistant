@@ -14,6 +14,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.fonts import addMapping
 from reportlab.lib.utils import simpleSplit
 from utils.functions import get_vector_store, get_response_
+from docx import Document
 
 # Load environment variables
 load_dotenv()
@@ -40,7 +41,6 @@ def create_pdf(translated_text):
         if not os.path.exists(template_path):
             raise FileNotFoundError("Hospital template PDF not found")
 
-        # Create a buffer for the translated text
         text_buffer = BytesIO()
         c = canvas.Canvas(text_buffer, pagesize=A4)
         c.setTitle("Translated Medical Report")
@@ -50,18 +50,15 @@ def create_pdf(translated_text):
         margin = inch
         text_width = width - 2 * margin
 
-        # Process the translated text
         reshaped_text = reshape_arabic_text(clean_text(translated_text))
         lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)
 
-        # Starting position for text
-        y = height - 2 * margin  # Adjusted to leave space for header
+        y = height - 2 * margin
 
         c.setFont("Arial", 12)
 
-        # Draw text
         for line in lines:
-            if y < 1.8 * margin:  # Adjusted to leave space at bottom
+            if y < 1.8 * margin:
                 c.showPage()
                 c.setFont("Arial", 12)
                 y = height - 2 * margin
@@ -72,36 +69,25 @@ def create_pdf(translated_text):
         c.save()
         text_buffer.seek(0)
 
-        # Create final PDF by merging template and text
         output_buffer = BytesIO()
-        
-        # Load template PDF
+
         template_pdf = PdfReader(template_path)
         output_pdf = PdfWriter()
 
-        # Load the PDF with translated text
         text_pdf = PdfReader(text_buffer)
 
-        # Merge template with text for each page
         for i in range(max(len(template_pdf.pages), len(text_pdf.pages))):
-            # Get template page (use first page if template has only one page)
             template_page = template_pdf.pages[0 if len(template_pdf.pages) == 1 else i % len(template_pdf.pages)]
-            
-            # Create a new page with the template
             new_page = PdfWriter().add_blank_page(width=template_page.mediabox.width, 
                                                   height=template_page.mediabox.height)
-            
-            # Merge the template page
             new_page.merge_page(template_page)
 
-            # If there's a corresponding text page, merge it
             if i < len(text_pdf.pages):
                 text_page = text_pdf.pages[i]
                 new_page.merge_page(text_page)
 
             output_pdf.add_page(new_page)
 
-        # Write the final PDF to buffer
         output_buffer = BytesIO()
         output_pdf.write(output_buffer)
         output_buffer.seek(0)
@@ -111,6 +97,14 @@ def create_pdf(translated_text):
     except Exception as e:
         st.error(f"Error creating PDF: {str(e)}")
         return None
+
+def read_docx(file):
+    """Read a DOCX file and return its text."""
+    doc = Document(file)
+    full_text = []
+    for para in doc.paragraphs:
+        full_text.append(para.text)
+    return '\n'.join(full_text)
 
 def translate():
     if "translate_state" not in st.session_state:
@@ -150,7 +144,7 @@ def translate():
             unsafe_allow_html=True,
         )
 
-    uploaded_file = st.file_uploader("Upload a medical report (PDF)", type=["pdf"])
+    uploaded_file = st.file_uploader("Upload a medical report", type=["pdf", "docx", "txt"])
     st.session_state.uploaded_file = uploaded_file
 
     if uploaded_file:
@@ -165,12 +159,17 @@ def translate():
             """, unsafe_allow_html=True)
 
             with st.spinner("Please wait, it's translating the text..."):
-                reader = PdfReader(uploaded_file)
-                st.session_state.pdf_text = ""
-                for page in reader.pages:
-                    st.session_state.pdf_text += page.extract_text()
+                if uploaded_file.type == "application/pdf":
+                    reader = PdfReader(uploaded_file)
+                    st.session_state.pdf_text = ""
+                    for page in reader.pages:
+                        st.session_state.pdf_text += page.extract_text()
+                elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                    st.session_state.pdf_text = read_docx(uploaded_file)
+                elif uploaded_file.type == "text/plain":
+                    st.session_state.pdf_text = uploaded_file.read().decode()
 
-                translation_prompt = "Please translate the attached pdf file comprehensively into medical Arabic in a well-structured format."
+                translation_prompt = "Please translate the attached document comprehensively into medical Arabic in a well-structured format."
                 response = get_response_(translation_prompt + " " + st.session_state.pdf_text)
                 st.session_state.chat_history1.append(AIMessage(content=response))
                 st.session_state.translated_text = clean_text(response)
@@ -181,26 +180,45 @@ def translate():
         styled_text = st.session_state.translated_text.replace('\n', '</p><p>')
         st.components.v1.html(
             f"""
-            <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif; box-sizing: border-box; padding: 20px; border: 1px solid #ccc; border-radius: 5px; background-color: white; max-height: 85vh; overflow-y: auto; width: 100%;">
-                <p>{styled_text}</p>
+            <div class='translatedText' data-testid="stAppViewContainer">
+                <textarea id="editableText" style="width:100%; height:600px;">{st.session_state.translated_text}</textarea>
                 <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 10px 15px;">Copy Translation 📕</button>
+                <button onclick="saveText()" style="margin-top: 10px; padding: 10px 15px;">Save Translation 💾</button>
             </div>
             <script>
                 function copyToClipboard() {{
-                    var copyText = document.createElement('textarea');
-                    copyText.value = `{st.session_state.translated_text}`;
-                    document.body.appendChild(copyText);
+                    var copyText = document.getElementById('editableText');
                     copyText.select();
                     document.execCommand("copy");
-                    document.body.removeChild(copyText);
                     alert("Copied to clipboard!");
+                }}
+
+                function saveText() {{
+                    var saveText = document.getElementById('editableText').value;
+                    alert("Text saved!");
                 }}
             </script>
             <style>
-                p {{
+               [data-testid="stAppViewContainer"]{{
+                        background-color: white;
+                        overflow-y: auto;
+                        max-height: 95vh;
+                        width: 100%;
+                        direction: rtl;
+                        text-align: justify;
+                        font-family: Arial, sans-serif;
+                        box-sizing: border-box;
+                        padding: 20px;
+                        border: 1px solid #ccc;
+                  }}
+
+                textarea {{
                     font-size: 18px;
-                    line-height: 1.6;
+                    line-height: 1.5;
                     margin: 0 0 10px 0;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    padding: 10px;
                 }}
                 button {{
                     cursor: pointer;
@@ -212,7 +230,7 @@ def translate():
             </style>
             """,
             height=800,
-            width=650,
+            width=800,
         )
 
         pdf_buffer = create_pdf(st.session_state.translated_text)

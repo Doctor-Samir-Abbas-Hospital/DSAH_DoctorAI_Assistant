@@ -21,4 +21,4 @@ arabic_reshaper
 python-bidi
 pyperclip 
 gunicorn
-
+python-docx
