@@ -61,7 +61,7 @@ def create_pdf(translated_text):
 
         # Draw text
         for line in lines:
-            if y < 1.7 * margin:  # Adjusted to leave space at bottom
+            if y < 1.8 * margin:  # Adjusted to leave space at bottom
                 c.showPage()
                 c.setFont("Arial", 12)
                 y = height - 2 * margin
@@ -178,26 +178,29 @@ def translate():
             st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
 
     if st.session_state.translated_text:
+        styled_text = st.session_state.translated_text.replace('\n', '</p><p>')
         st.components.v1.html(
             f"""
-            <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif; box-sizing: border-box;">
-                <textarea id="translatedText" style="width: 100%; height: 90vh; border: 1px solid #ccc; overflow-y: auto; resize: both;">{st.session_state.translated_text}</textarea>
-                <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 5px 10px;">Copy Translation 📕</button>
+            <div style="direction: rtl; text-align: justify; font-family: Arial, sans-serif; box-sizing: border-box; padding: 20px; border: 1px solid #ccc; border-radius: 5px; background-color: white; max-height: 85vh; overflow-y: auto; width: 100%;">
+                <p>{styled_text}</p>
+                <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 10px 15px;">Copy Translation 📕</button>
             </div>
             <script>
                 function copyToClipboard() {{
-                    var copyText = document.getElementById("translatedText");
+                    var copyText = document.createElement('textarea');
+                    copyText.value = `{st.session_state.translated_text}`;
+                    document.body.appendChild(copyText);
                     copyText.select();
                     document.execCommand("copy");
+                    document.body.removeChild(copyText);
                     alert("Copied to clipboard!");
                 }}
             </script>
             <style>
-                textarea {{
-                    font-size: 16px;
-                    line-height: 1.5;
-                    width: 100%;
-                    box-sizing: border-box;
+                p {{
+                    font-size: 18px;
+                    line-height: 1.6;
+                    margin: 0 0 10px 0;
                 }}
                 button {{
                     cursor: pointer;
@@ -208,7 +211,8 @@ def translate():
                 }}
             </style>
             """,
-            height=1000,
+            height=800,
+            width=650,
         )
 
         pdf_buffer = create_pdf(st.session_state.translated_text)
