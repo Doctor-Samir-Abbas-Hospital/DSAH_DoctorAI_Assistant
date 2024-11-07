@@ -24,7 +24,13 @@
   border: none !important;
 }
 
-
+.stTextArea [data-baseweb=base-input] {
+  width: 100%;
+}
+.e1nzilvr5{
+  font-size: 2rem;
+  color: #fff;
+}
 /*header*/
 /*
 div.ezrtsby2{
@@ -521,6 +527,7 @@ button {
   overflow: hidden;
   transition: 0.5s;
   border: 2px solid;
+  background: #990033 !important;
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out !important;
   border: 2px solid !important;
   border-image: linear-gradient(to right, rgb(182, 244, 146), rgb(73, 187, 216)) 1 !important;
@@ -528,7 +535,7 @@ button {
 
 
 button:hover {
-  background-color: #990033;
+  border-image: linear-gradient(to right, rgb(182, 244, 146), rgb(73, 187, 216)) 1 !important;
   color: #ffffff !important;
   border-radius: 5px;
 }

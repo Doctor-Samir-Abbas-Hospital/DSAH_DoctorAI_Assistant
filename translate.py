@@ -15,6 +15,7 @@ from reportlab.lib.fonts import addMapping
 from reportlab.lib.utils import simpleSplit
 from utils.functions import get_vector_store, get_response_
 from docx import Document
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -34,8 +35,8 @@ def clean_text(text):
     """Removes unwanted characters and cleans the text."""
     return text.replace('*', '').replace('#', '')
 
-def create_pdf(translated_text):
-    """Creates a PDF using hospital template and adds translated text."""
+def create_pdf(translated_text, doctor_name, department, selected_date):
+    """Creates a PDF with translated text and additional info."""
     try:
         template_path = os.path.join('assets', 'hospital_template.pdf')
         if not os.path.exists(template_path):
@@ -54,7 +55,6 @@ def create_pdf(translated_text):
         lines = simpleSplit(reshaped_text, 'Arial', 12, text_width)
 
         y = height - 2 * margin
-
         c.setFont("Arial", 12)
 
         for line in lines:
@@ -66,14 +66,25 @@ def create_pdf(translated_text):
             c.drawRightString(width - margin, y, line)
             y -= 14
 
+        # Add doctor details just below the translation
+        if y < margin:
+            c.showPage()
+            y = height - 2 * margin
+
+        y -= 20
+        c.setFont("Arial", 12)
+        c.drawRightString(width - margin, y, f"Doctor: {doctor_name}")
+        y -= 14
+        c.drawRightString(width - margin, y, f"Department: {department}")
+        y -= 14
+        c.drawRightString(width - margin, y, f"Date: {selected_date}")
+
         c.save()
         text_buffer.seek(0)
 
         output_buffer = BytesIO()
-
         template_pdf = PdfReader(template_path)
         output_pdf = PdfWriter()
-
         text_pdf = PdfReader(text_buffer)
 
         for i in range(max(len(template_pdf.pages), len(text_pdf.pages))):
@@ -144,44 +155,52 @@ def translate():
             unsafe_allow_html=True,
         )
 
-    uploaded_file = st.file_uploader("Upload a medical report", type=["pdf", "docx", "txt"])
-    st.session_state.uploaded_file = uploaded_file
+        doctor_name = st.text_input("Doctor Name")
+        department = st.text_input("Department")
+        selected_date = st.date_input("Select Date", datetime.now())
 
-    if uploaded_file:
-        translate_button = st.button("Translate The Medical Report")
-        if translate_button:
-            st.markdown("""
-                <div class="typewriter">
-                    <div class="slide"><i></i></div>
-                    <div class="paper"></div>
-                    <div class="keyboard"></div>
-                </div>
-            """, unsafe_allow_html=True)
+    if doctor_name and department and selected_date:
+        uploaded_file = st.sidebar.file_uploader("Upload a medical report", type=["pdf", "docx", "txt"])
+        st.session_state.uploaded_file = uploaded_file
+    
+        if uploaded_file:
+            translate_button = st.button("Translate The Medical Report")
+            if translate_button:
+                st.markdown("""
+                    <div class="typewriter">
+                        <div class="slide"><i></i></div>
+                        <div class="paper"></div>
+                        <div class="keyboard"></div>
+                    </div>
+                """, unsafe_allow_html=True)
 
-            with st.spinner("Please wait, it's translating the text..."):
-                if uploaded_file.type == "application/pdf":
-                    reader = PdfReader(uploaded_file)
-                    st.session_state.pdf_text = ""
-                    for page in reader.pages:
-                        st.session_state.pdf_text += page.extract_text()
-                elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                    st.session_state.pdf_text = read_docx(uploaded_file)
-                elif uploaded_file.type == "text/plain":
-                    st.session_state.pdf_text = uploaded_file.read().decode()
+                with st.spinner("Please wait, it's translating the text..."):
+                    if uploaded_file.type == "application/pdf":
+                        reader = PdfReader(uploaded_file)
+                        st.session_state.pdf_text = ""
+                        for page in reader.pages:
+                            st.session_state.pdf_text += page.extract_text()
+                    elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                        st.session_state.pdf_text = read_docx(uploaded_file)
+                    elif uploaded_file.type == "text/plain":
+                        st.session_state.pdf_text = uploaded_file.read().decode()
 
-                translation_prompt = "Please translate the attached document comprehensively into medical Arabic in a well-structured format."
-                response = get_response_(translation_prompt + " " + st.session_state.pdf_text)
-                st.session_state.chat_history1.append(AIMessage(content=response))
-                st.session_state.translated_text = clean_text(response)
+                    translation_prompt = "Please translate the attached document comprehensively into medical Arabic in a well-structured format."
+                    response = get_response_(translation_prompt + " " + st.session_state.pdf_text)
+                    st.session_state.chat_history1.append(AIMessage(content=response))
+                    st.session_state.translated_text = clean_text(response)
 
-            st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
+                st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
+    else:
+        st.sidebar.info("Please fill your name and department press ENTER to upload the documents")
+
 
     if st.session_state.translated_text:
         styled_text = st.session_state.translated_text.replace('\n', '</p><p>')
         st.components.v1.html(
             f"""
             <div class='translatedText' data-testid="stAppViewContainer">
-                <textarea id="editableText" style="width:100%; height:600px;">{st.session_state.translated_text}</textarea>
+                <textarea id="editableText" style="width:100%; height:600px;" readonly>{st.session_state.translated_text}</textarea>
                 <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 10px 15px;">Copy Translation 📕</button>
                 <button onclick="saveText()" style="margin-top: 10px; padding: 10px 15px;">Save Translation 💾</button>
             </div>
@@ -232,8 +251,12 @@ def translate():
             height=800,
             width=800,
         )
-
-        pdf_buffer = create_pdf(st.session_state.translated_text)
+        pdf_buffer = create_pdf(
+            st.session_state.translated_text,
+            doctor_name,
+            department,
+            selected_date.strftime("%Y-%m-%d")
+        )
         
         if pdf_buffer:
             st.sidebar.download_button(
