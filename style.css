@@ -10,7 +10,7 @@
   background: linear-gradient(to right, rgb(182, 244, 146), rgb(73, 187, 216));
 }
 [data-testid="baseButton-header"]{
-  background-color: #fff;
+  background-color: #fff !important;
   color: red;
   border: none !important;
   
@@ -27,8 +27,15 @@
 .stTextArea [data-baseweb=base-input] {
   width: 100%;
 }
+.ef3psqc12{
+  color: #fff;
+  
+}
 .e1nzilvr5{
   font-size: 2rem;
+  color: #fff;
+}
+[data-testid="stFileUploaderFileName"]{
   color: #fff;
 }
 /*header*/
@@ -64,16 +71,14 @@ div.ezrtsby2{
 }
 
 .profileImage {
-  width: 180px;
+  width: 200px;
   /* Adjust the width as needed */
-  height: 180px;
+  height: 200px;
   margin-right: 10px;
   margin-left: 12px;
   margin-top: 15px;
   border-radius: 50%;
   object-fit: cover;
-  border: linear-gradient(to right, rgb(88, 221, 11), rgb(51, 139, 147));
-  border-style: double;
   animation: flip 2s infinite;
 }
 
@@ -96,7 +101,7 @@ div.st-emotion-cache-18ni7ap .ezrtsby2 {
 
 .textContainer .title p {
   font-size: 24px;
-  color: white;
+  color: white !important;
   font-weight: bold;
 }
 
