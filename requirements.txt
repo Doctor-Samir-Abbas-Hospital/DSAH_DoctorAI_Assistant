@@ -22,3 +22,4 @@ python-bidi
 pyperclip 
 gunicorn
 python-docx
+Spire.PDF

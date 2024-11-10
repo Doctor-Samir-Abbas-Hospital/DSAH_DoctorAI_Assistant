@@ -14,6 +14,8 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.fonts import addMapping
 from reportlab.lib.utils import simpleSplit
 from utils.functions import get_vector_store, get_response_
+from spire.pdf.common import *
+from spire.pdf import PdfDocument, FileFormat
 from docx import Document
 from datetime import datetime
 
@@ -109,6 +111,32 @@ def create_pdf(translated_text, doctor_name, department, selected_date):
         st.error(f"Error creating PDF: {str(e)}")
         return None
 
+def convert_pdf_to_word(pdf_path, output_path="output.docx"):
+    """Convert PDF to Word using Spire.PDF."""
+    try:
+        # Create a PdfDocument object
+        doc = PdfDocument()
+        
+        # Load the PDF
+        doc.LoadFromFile(pdf_path)
+        
+        # Save it as a Word document
+        doc.SaveToFile(output_path, FileFormat.DOCX)
+        
+        # Dispose of resources
+        doc.Close()
+        
+        # Return the output path for download
+        with open(output_path, "rb") as file:
+            word_buffer = BytesIO(file.read())
+        word_buffer.seek(0)
+        
+        return word_buffer
+
+    except Exception as e:
+        st.error(f"Error converting PDF to Word: {str(e)}")
+        return None
+
 def read_docx(file):
     """Read a DOCX file and return its text."""
     doc = Document(file)
@@ -166,13 +194,7 @@ def translate():
         if uploaded_file:
             translate_button = st.button("Translate The Medical Report")
             if translate_button:
-                st.markdown("""
-                    <div class="typewriter">
-                        <div class="slide"><i></i></div>
-                        <div class="paper"></div>
-                        <div class="keyboard"></div>
-                    </div>
-                """, unsafe_allow_html=True)
+                st.markdown("""<div class="typewriter"><div class="slide"><i></i></div><div class="paper"></div><div class="keyboard"></div></div>""", unsafe_allow_html=True)
 
                 with st.spinner("Please wait, it's translating the text..."):
                     if uploaded_file.type == "application/pdf":
@@ -194,7 +216,6 @@ def translate():
     else:
         st.sidebar.info("Please fill your name and department press ENTER to upload the documents")
 
-
     if st.session_state.translated_text:
         styled_text = st.session_state.translated_text.replace('\n', '</p><p>')
         st.components.v1.html(
@@ -202,7 +223,6 @@ def translate():
             <div class='translatedText' data-testid="stAppViewContainer">
                 <textarea id="editableText" style="width:100%; height:600px;" readonly>{st.session_state.translated_text}</textarea>
                 <button onclick="copyToClipboard()" style="margin-top: 10px; padding: 10px 15px;">Copy Translation 📕</button>
-                <button onclick="saveText()" style="margin-top: 10px; padding: 10px 15px;">Save Translation 💾</button>
             </div>
             <script>
                 function copyToClipboard() {{
@@ -211,26 +231,20 @@ def translate():
                     document.execCommand("copy");
                     alert("Copied to clipboard!");
                 }}
-
-                function saveText() {{
-                    var saveText = document.getElementById('editableText').value;
-                    alert("Text saved!");
-                }}
             </script>
             <style>
-               [data-testid="stAppViewContainer"]{{
-                        background-color: white;
-                        overflow-y: auto;
-                        max-height: 95vh;
-                        width: 100%;
-                        direction: rtl;
-                        text-align: justify;
-                        font-family: Arial, sans-serif;
-                        box-sizing: border-box;
-                        padding: 20px;
-                        border: 1px solid #ccc;
-                  }}
-
+               [data-testid="stAppViewContainer"] {{
+                    background-color: white;
+                    overflow-y: auto;
+                    max-height: 95vh;
+                    width: 100%;
+                    direction: rtl;
+                    text-align: justify;
+                    font-family: Arial, sans-serif;
+                    box-sizing: border-box;
+                    padding: 20px;
+                    border: 1px solid #ccc;
+                }}
                 textarea {{
                     font-size: 18px;
                     line-height: 1;
@@ -259,14 +273,29 @@ def translate():
         )
         
         if pdf_buffer:
+            # Save the temporary PDF to a file
+            pdf_path = "translated_report.pdf"
+            with open(pdf_path, "wb") as f:
+                f.write(pdf_buffer.getbuffer())
+                
+            word_buffer = convert_pdf_to_word(pdf_path)
+            
             st.sidebar.download_button(
-                label="Download Translated Report",
+                label="Download Translated Report as PDF",
                 data=pdf_buffer,
                 file_name="translated_report.pdf",
                 mime="application/pdf"
             )
-        else:
-            st.error("Unable to generate PDF. Please check if the template exists.")
+            
+            if word_buffer:
+                st.sidebar.download_button(
+                    label="Download Translated Report as Word",
+                    data=word_buffer,
+                    file_name="translated_report.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
+            else:
+                st.error("Unable to generate Word document.")
 
 if __name__ == "__main__":
     translate()
