@@ -27,6 +27,9 @@ font_path = os.path.join('assets', 'Arial.ttf')
 pdfmetrics.registerFont(TTFont('Arial', font_path))
 addMapping('Arial', 0, 0, 'Arial')
 
+# Path to the GIF image
+gif_path = os.path.join('assets', 'gesture.gif')
+
 def reshape_arabic_text(text):
     """Reshapes and applies bidi formatting for Arabic text."""
     reshaped_text = arabic_reshaper.reshape(text)
@@ -68,7 +71,7 @@ def create_pdf(translated_text, doctor_name, department, selected_date):
             c.drawRightString(width - margin, y, line)
             y -= 14
 
-        # Add doctor details just below the translation
+        # Add doctor details below the translation
         if y < margin:
             c.showPage()
             y = height - 2 * margin
@@ -114,19 +117,11 @@ def create_pdf(translated_text, doctor_name, department, selected_date):
 def convert_pdf_to_word(pdf_path, output_path="output.docx"):
     """Convert PDF to Word using Spire.PDF."""
     try:
-        # Create a PdfDocument object
         doc = PdfDocument()
-        
-        # Load the PDF
         doc.LoadFromFile(pdf_path)
-        
-        # Save it as a Word document
         doc.SaveToFile(output_path, FileFormat.DOCX)
-        
-        # Dispose of resources
         doc.Close()
         
-        # Return the output path for download
         with open(output_path, "rb") as file:
             word_buffer = BytesIO(file.read())
         word_buffer.seek(0)
@@ -192,27 +187,41 @@ def translate():
         st.session_state.uploaded_file = uploaded_file
     
         if uploaded_file:
-            translate_button = st.button("Translate The Medical Report")
-            if translate_button:
-                st.markdown("""<div class="typewriter"><div class="slide"><i></i></div><div class="paper"></div><div class="keyboard"></div></div>""", unsafe_allow_html=True)
+            # Check if the translate button has been pressed
+            if "translate_pressed" not in st.session_state:
+                st.session_state.translate_pressed = False
 
-                with st.spinner("Please wait, it's translating the text..."):
-                    if uploaded_file.type == "application/pdf":
-                        reader = PdfReader(uploaded_file)
-                        st.session_state.pdf_text = ""
-                        for page in reader.pages:
-                            st.session_state.pdf_text += page.extract_text()
-                    elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                        st.session_state.pdf_text = read_docx(uploaded_file)
-                    elif uploaded_file.type == "text/plain":
-                        st.session_state.pdf_text = uploaded_file.read().decode()
+            col1, col2 = st.columns([1, 2])
 
-                    translation_prompt = "Please translate the attached document comprehensively into medical Arabic in a well-structured format."
-                    response = get_response_(translation_prompt + " " + st.session_state.pdf_text)
-                    st.session_state.chat_history1.append(AIMessage(content=response))
-                    st.session_state.translated_text = clean_text(response)
+            with col1:
+                # Show the GIF only if the translate button has not been pressed
+                if not st.session_state.translate_pressed:
+                    st.image(gif_path, use_column_width=True)
 
-                st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
+            with col2:
+                translate_button = st.button("👉 Press To Translate The Medical Report")
+                if translate_button:
+                    # Set flag to true to hide the GIF
+                    st.session_state.translate_pressed = True
+                    st.markdown("""<div class="typewriter"><div class="slide"><i></i></div><div class="paper"></div><div class="keyboard"></div></div>""", unsafe_allow_html=True)
+
+                    with st.spinner("Please wait, it's translating the text..."):
+                        if uploaded_file.type == "application/pdf":
+                            reader = PdfReader(uploaded_file)
+                            st.session_state.pdf_text = ""
+                            for page in reader.pages:
+                                st.session_state.pdf_text += page.extract_text()
+                        elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                            st.session_state.pdf_text = read_docx(uploaded_file)
+                        elif uploaded_file.type == "text/plain":
+                            st.session_state.pdf_text = uploaded_file.read().decode()
+
+                        translation_prompt = "Please translate the attached document comprehensively into medical Arabic in a well-structured format."
+                        response = get_response_(translation_prompt + " " + st.session_state.pdf_text)
+                        st.session_state.chat_history1.append(AIMessage(content=response))
+                        st.session_state.translated_text = clean_text(response)
+
+                    st.markdown("<style>.typewriter { display: none; }</style>", unsafe_allow_html=True)
     else:
         st.sidebar.info("Please fill your name and department press ENTER to upload the documents")
 
@@ -273,7 +282,6 @@ def translate():
         )
         
         if pdf_buffer:
-            # Save the temporary PDF to a file
             pdf_path = "translated_report.pdf"
             with open(pdf_path, "wb") as f:
                 f.write(pdf_buffer.getbuffer())
@@ -299,3 +307,9 @@ def translate():
 
 if __name__ == "__main__":
     translate()
+
+
+
+
+
+
