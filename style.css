@@ -101,7 +101,6 @@ div.st-emotion-cache-18ni7ap .ezrtsby2 {
 
 .textContainer .title p {
   font-size: 24px;
-  color: white !important;
   font-weight: bold;
 }
 
@@ -110,12 +109,13 @@ div.st-emotion-cache-18ni7ap .ezrtsby2 {
 div.st-emotion-cache-4oy321.eeusbqq4 {
   background-color: white;
   border-radius: 20px;
+  color: black !important;
   margin-top: 5px;
   animation: fade-in-right 2s ease-in-out both;
 }
 
 div.st-emotion-cache-4oy321.eeusbqq4 p {
-  color: black;
+  color: black !important;
   padding: 5px;
   font-family: "Times New Roman";
   font-size: 17px;
@@ -134,7 +134,7 @@ div.st-emotion-cache-1c7y2kd.eeusbqq4 {
 }
 
 div.st-emotion-cache-1c7y2kd.eeusbqq4 p {
-  color: black;
+  color: black !important;
   font-family: "Times New Roman";
   font-size: 18px;
 }
