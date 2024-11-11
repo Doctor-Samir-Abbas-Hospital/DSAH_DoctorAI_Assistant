@@ -28,7 +28,7 @@ pdfmetrics.registerFont(TTFont('Arial', font_path))
 addMapping('Arial', 0, 0, 'Arial')
 
 # Path to the GIF image
-gif_path = os.path.join('assets', 'gesture.gif')
+gif_path = os.path.join('assets', 'tap.gif')
 
 def reshape_arabic_text(text):
     """Reshapes and applies bidi formatting for Arabic text."""
