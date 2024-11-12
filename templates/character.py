@@ -11,6 +11,9 @@ character_3d_component = """
 
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Character Tutorial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Agdasima:wght@400;700&display=swap" rel="stylesheet">
     
 </head>
 <body>
@@ -39,10 +42,32 @@ character_3d_component = """
 .footer-container p {
   color: white;
   font-family: Arial, sans-serif;
-  font-size: 13px;
+  font-size: 20px;
   margin: 0;
+  width: 30ch;
+	white-space: nowrap;
+	overflow: hidden;
+  font-family: "Agdasima", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+	border-right: 4px solid white;
+	animation: cursor 1s step-start infinite, 
+  text 5s steps(18) alternate infinite;
+}
+@keyframes cursor {
+	0%, 100% { 
+    border-color: white; 
+  }
 }
 
+@keyframes text {
+	0% { 
+    width: 0; 
+  }
+	100% { 
+    width: 30ch; 
+  }
+}
 </style>
 <!-- The main Three.js file -->
 <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/108/three.min.js'></script>
