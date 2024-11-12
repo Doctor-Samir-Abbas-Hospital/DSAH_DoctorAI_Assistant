@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, HumanMessage
 from openai import OpenAI
 from templates.watch import clock
+from templates.character import character_3d_component
 from utils.functions import (
     get_vector_store,
     get_response,
@@ -48,7 +49,7 @@ def app():
             height=400,
             width=300,
         )
-    
+        st.components.v1.html(character_3d_component,height=400,width=300)
     # Initialize session states
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = [
