@@ -4,7 +4,7 @@ from streamlit_extras.bottom_container import bottom
 from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, HumanMessage
 from openai import OpenAI
-from templates.watch import clock
+from templates.carousel import carousel_html
 from templates.character import character_3d_component
 from utils.functions import (
     get_vector_store,
@@ -44,11 +44,8 @@ def app():
         )
 
         # Embed the clock widget
-        st.components.v1.html(
-            clock,
-            height=400,
-            width=300,
-        )
+        # Embed carousel HTML into Streamlit sidebar
+        st.components.v1.html(carousel_html, height=250,width=350)
         st.components.v1.html(character_3d_component,height=400,width=300)
     # Initialize session states
     if "chat_history" not in st.session_state:
