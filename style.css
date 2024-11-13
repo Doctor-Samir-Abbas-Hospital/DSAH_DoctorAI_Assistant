@@ -29,7 +29,6 @@
 }
 .e1nzilvr5{
   font-size: 2rem;
-  color: #fff;
 }
 [data-testid="stFileUploaderFileName"]{
   color: #fff;
@@ -99,22 +98,25 @@ div.st-emotion-cache-18ni7ap .ezrtsby2 {
   font-weight: bold;
 }
 
-/*chat message AI*/
-
 div.st-emotion-cache-4oy321.eeusbqq4 {
-  background-color: white;
   border-radius: 20px;
   color: black !important;
   margin-top: 5px;
+  background: rgba(255, 255, 255); /* Semi-transparent white background */
+  backdrop-filter: blur(10px); /* Blur effect for glassmorphism */
+  border: 1px solid rgba(255, 255, 255); /* Light border for glass effect */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
   animation: fade-in-right 2s ease-in-out both;
 }
 
+/* Text Styling within the AI Chat Message */
 div.st-emotion-cache-4oy321.eeusbqq4 p {
   color: black !important;
   padding: 5px;
   font-family: "Times New Roman";
   font-size: 17px;
 }
+
 #translatedText{
   width: 100vw;
 }
