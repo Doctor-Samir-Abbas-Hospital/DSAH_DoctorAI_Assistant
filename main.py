@@ -59,3 +59,4 @@ if page == "Doctor AI Assistant":
     app.app()  # Call the app function from app.py
 elif page=="Medical Report Translator":
     translate.translate()  # Call Call the translate function from translate.py # Call the translate function from translate.py
+   
